@@ -78,6 +78,9 @@ target/
 # Jupyter Notebook
 .ipynb_checkpoints
 
+# Using jupytext, don't want any notebook
+*.ipynb
+
 # IPython
 profile_default/
 ipython_config.py

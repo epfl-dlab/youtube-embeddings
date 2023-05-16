@@ -1,0 +1,627 @@
+<!-- You must include this JavaScript file -->
+<script src="https://assets.crowd.aws/crowd-html-elements.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style> @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap'); </style>
+<script src="https://code.jquery.com/jquery-3.3.1.js"
+  integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60="
+  crossorigin="anonymous"></script>
+<script>
+  jQuery(document).ready(function() {
+  jQuery('span.emoji-bytes').each(displayEmoji);
+  });
+</script>
+<style>
+  .parent {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: auto 1fr auto 1fr auto 1fr;
+  grid-column-gap: 0px;
+  grid-row-gap: 0px;
+  grid-auto-rows: fit-content(1em);
+  }
+  .container {  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: auto 1fr 1fr 1fr 1fr;
+  gap: 0px 0px;
+  grid-auto-flow: row;
+  grid-template-areas:
+  "A B C"
+  "A0 B0 C0"
+  "A1 B1 C1"
+  "A2 B2 C2"
+  "A3 B3 C3";
+  }
+  .A { grid-area: A; }
+  .B { grid-area: B; }
+  .C { grid-area: C; }
+  .A0 { grid-area: A0; }
+  .A1 { grid-area: A1; }
+  .A2 { grid-area: A2; }
+  .A3 { grid-area: A3; }
+  .B0 { grid-area: B0; }
+  .B1 { grid-area: B1; }
+  .B2 { grid-area: B2; }
+  .B3 { grid-area: B3; }
+  .C0 { grid-area: C0; }
+  .C1 { grid-area: C1; }
+  .C2 { grid-area: C2; }
+  .C3 { grid-area: C3; }
+  .wrapper {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  padding: 1vmin;
+  }
+  .grid-item {
+  padding: 1vmin;
+  margin:0;
+  font-size: 10px;
+  text-align: center;
+  display: block;
+  min-width: 0;
+  }
+  .section-title{
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  }
+  .grid-image{
+  max-height: 100%;
+  max-width: 100%;
+  border-radius: 3%;
+  }
+  .row-channel{
+  max-height: 20vh;
+  max-width: 100%;
+  padding: 1vmin;
+  }
+  .grid-text{
+  font-size: 2vmin;
+  line-height: 140%;
+  font-family: "Roboto","Arial",sans-serif;
+  }
+  .channel-name{
+  font-size:3vmin;
+  margin:0;
+  }
+  .div-grid{
+  max-width: min(100%, 30vmin);
+  max-height: min(100%, 30vmin);
+  }
+  .split {
+  height: 100%;
+  position: absolute;
+  overflow-x: hidden;
+  }
+  .left {
+  left: 0;
+  width: 70%;
+  }
+  .right {
+  right: 0;
+  width: 30%;
+  background: #f5f5f5;
+  }
+  kbd {
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 0.1em 0.5em;
+  margin: 0 0.2em;
+  box-shadow: 0 1px 0px rgba(0, 0, 0, 0.2), 0 0 0 2px #fff inset;
+  background-color: #f7f7f7;
+  }
+  a, u {
+  text-decoration: none;
+  color: black;
+  font-weight: 500;
+  }
+  a:link{
+  color:none;
+  }
+  a:visited{
+  color:purple;
+  }
+  a:hover{
+  font-weight: 700;
+  }
+  a:focus{
+  font-weight: 700;
+  }
+  a:active{
+  font-weight: 700;
+  }
+  .fully-centered{
+  position: absolute;
+  left: 50%;
+  -webkit-transform: translate(-50%, 0%);
+  transform: translate(-50%, 0%);
+  }
+</style>
+<!-- https://github.com/imkevinkuo/misc-tools/blob/master/validateCrowdForm.js -->
+<script>
+  function validateForm() {
+  var valid = true;
+  var radioGroups = document.querySelectorAll("crowd-radio-group");
+  for (var i = 0; i < radioGroups.length; i++) {
+  var validGroup = false;
+  var radioButtons = radioGroups[i].children;
+  for (var j = 0; j < radioButtons.length; j++) {
+  	validGroup = validGroup || radioButtons[j].checked;
+  }
+  valid = valid && validGroup;
+  }
+  return valid;
+  }
+  
+    function blurAll(){
+     var tmp = document.createElement("input");
+     document.body.appendChild(tmp);
+     tmp.focus();
+     document.body.removeChild(tmp);
+    }
+  
+  function updatePage(arr) {
+      for (const [key, value] of Object.entries(arr)) {
+       let elem = document.getElementById(key)
+       
+          if(key.includes('_channelId')){
+              elem.href = 'https://youtube.com/channel/'+value
+  
+              
+          }else if(key.includes('_channelTitle')){
+            const ident = key.split('_')[0]
+            elem.innerHTML = ident + ' : ' + value
+              
+          }else if(key.includes('_videoId_')){
+              elem.href = value
+              
+          }else if(key.includes('_thumbnail_')){
+              elem.src = value
+              
+          }else if(key.includes('_title_')){
+              elem.innerHTML = value
+              
+          }else{
+              alert('ISSUE')
+          }
+        }
+  }
+  
+  var parsed = ""
+  var currentIter = 0
+  const results = []
+  
+  function uncheckRadio(){
+    document.getElementById('a').checked = false
+    document.getElementById('b').checked = false
+    document.getElementById('c').checked = false
+  }
+  
+  function getChecked(){
+      if(document.getElementById('a').checked){
+          return 'a'
+      }
+      if(document.getElementById('b').checked){
+          return 'b'
+      }
+      if(document.getElementById('c').checked){
+          return 'c'
+      }
+      return 'none'
+  }
+  
+  function submitButton(){
+    console.log('Submitted')
+    
+    if (!validateForm()) {
+    alert("Please answer all the questions in order to submit.");
+    return;
+   }
+      
+      results.push(getChecked())
+      uncheckRadio()
+        
+      if(currentIter < parsed.length){
+        
+        document.getElementById('current-step').innerHTML = currentIter+1
+        updatePage(parsed[currentIter++])
+  
+      }else{
+        const inputForm = document.getElementById('crowd-input-final')
+        const resStr = results.join()
+        inputForm.innerHTML = resStr
+        inputForm.value = resStr
+        
+        document.getElementById('submitter-button').click()
+      }
+      
+      blurAll()
+  }
+  window.onload = function() {
+  const b64_var = document.getElementById("json-data").innerHTML;
+  const code_var = atob(b64_var)
+  parsed = JSON.parse(code_var)
+  
+  
+  }
+  
+  function hideOverlay(){
+  const overlaybg = document.getElementById('fixed-background-overlay')
+  const overlay = document.getElementById('text-overlay')
+  
+  //overlaybg.style.display = "none"
+  //overlay.style.display = "none"
+  overlaybg.remove()
+  overlay.remove()
+  
+  console.log(parsed, currentIter)
+  console.log(updatePage)
+  
+  updatePage(parsed[currentIter++])
+  
+  }
+</script>
+<div id="fixed-background-overlay" style="position:fixed;z-index:3;top:0;width:100%;height:100vh;background:white;bottom:0;"></div>
+<div id="text-overlay" style="position:absolute;z-index:5;top:0;width:100%;height:100vh;">
+  <div class="fully-centered" style="overflow:hidden">
+    <div>
+      <p><b>Goal: </b></p>
+      <p>This is the qualification test for the "Pick the odd youtube channel out" experiment. If you have good enough results, you will earn the qualification to participate in the larger experiment with more HITs and a better pay (around $0.7/task).
+        <br>
+        This experiment will work in multiple steps. At each step, you will be presented with three youtube channels.
+        These channels are represented by the thumbnails of their most recent videos.
+        From this information, you have to deduct which channel is the odd one out, that is, the most different.
+        Each of these steps shouldn't take much more than 20 seconds.
+      </p>
+      <p><b>Shortcuts: </b></p>
+      <p><kbd>1</kbd> : Select A</p>
+      <p><kbd>2</kbd> : Select B</p>
+      <p><kbd>3</kbd> : Select C</p>
+      <p><kbd>Shift</kbd> + <kbd>Enter</kbd> : Submit</p>
+    </div>
+    <div>
+      <p>By similarity, we mean content similarity, for example, if you are able to find one topic which is applicable for two channels, but not the third one, it would be reasonable to pick the latter as the odd one out.</p>
+    </div>
+    <p><b>Example: </b></p>
+    <div style="display:flex">
+      <div class="container" style="height:45vh;overflow:scroll">
+        <div class="A">
+          <div class="section-title">
+            <a id="A_channelId" href="https://youtube.com/channel/UCiLgdNKZCiod7k5nsrUkOJA" target="_blank">
+            <span id="A_channelTitle" class="channel-name">A : Simply Electronics</span>
+            </a>
+          </div>
+        </div>
+        <div class="B">
+          <div class="section-title">
+            <a id="B_channelId" href="https://youtube.com/channel/UCosnWgi3eorc1klEQ8pIgJQ" target="_blank">
+            <span id="B_channelTitle" class="channel-name">B : Afrotechmods</span>
+            </a>
+          </div>
+        </div>
+        <div class="C">
+          <div class="section-title">
+            <a id="C_channelId" href="https://youtube.com/channel/UCDB6ra11XRRbp-_bKs-Z33A" target="_blank">
+            <span id="C_channelTitle" class="channel-name">C : TheRepairSpecialist</span>
+            </a>
+          </div>
+        </div>
+        <div class="A0">
+          <a id="A_videoId_0" href="https://youtube.com/watch?v=dpmnqSOGv4o" target="_blank">
+            <figure class="grid-item">
+              <img id="A_thumbnail_0" class="grid-image" src="https://i.ytimg.com/vi/dpmnqSOGv4o/hqdefault.jpg?sqp=-oaymwEcCNACELwBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLDwKrv4x89Es5wAhDD-IfkdqGTUSg">
+              <figcaption id="A_title_0" class="grid-text">How Logic Gates Work! (Easy!)</figcaption>
+            </figure>
+          </a>
+        </div>
+        <div class="A1">
+          <a id="A_videoId_1" href="https://youtube.com/watch?v=2fvXW4OEWLE" target="_blank">
+            <figure class="grid-item">
+              <img id="A_thumbnail_1" class="grid-image" src="https://i.ytimg.com/vi/2fvXW4OEWLE/hqdefault.jpg?sqp=-oaymwEcCNACELwBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLCEx6g0unlJAsUrluNUtiGGOpr_Sw">
+              <figcaption id="A_title_1" class="grid-text">What is an LDR? (Light Dependant Resistor) - Electronics Basics 26</figcaption>
+            </figure>
+          </a>
+        </div>
+        <div class="A2">
+          <a id="A_videoId_2" href="https://youtube.com/watch?v=N9UDobarNhU" target="_blank">
+            <figure class="grid-item">
+              <img id="A_thumbnail_2" class="grid-image" src="https://i.ytimg.com/vi/N9UDobarNhU/hqdefault.jpg?sqp=-oaymwEcCNACELwBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLCLlhnUTMswYl76QAIlgsRrc51G4A
+                ">
+              <figcaption id="A_title_2" class="grid-text">Using Zener Diodes (Part 2!) -  Making a Voltage Regulator</figcaption>
+            </figure>
+          </a>
+        </div>
+        <div class="A3">
+          <a id="A_videoId_3" href="https://youtube.com/watch?v=E4IIiIhIYAg" target="_blank">
+            <figure class="grid-item">
+              <img id="A_thumbnail_3" class="grid-image" src="https://i.ytimg.com/vi/E4IIiIhIYAg/hqdefault.jpg?sqp=-oaymwEcCNACELwBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLBJFAq_HwnbKL6JqBw453Uja-uvlg">
+              <figcaption id="A_title_3" class="grid-text">Using Zener Diodes (Part 1) - Voltage Regulator and Zener Theory</figcaption>
+            </figure>
+          </a>
+        </div>
+        <div class="B0">
+          <a id="B_videoId_0" href="https://youtube.com/watch?v=WytU5uj78-4" target="_blank">
+            <figure class="grid-item">
+              <img id="B_thumbnail_0" class="grid-image" src="https://i.ytimg.com/vi/WytU5uj78-4/hqdefault.jpg?sqp=-oaymwEcCNACELwBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLD2ILiadSaW0gaYBnvbuJ9CWqnyqA">
+              <figcaption id="B_title_0" class="grid-text">Why electrolytic capacitors are actually kinda crappy</figcaption>
+            </figure>
+          </a>
+        </div>
+        <div class="B1">
+          <a id="B_videoId_1" href="https://youtube.com/watch?v=Fzq68nXrWLM" target="_blank">
+            <figure class="grid-item">
+              <img id="B_thumbnail_1" class="grid-image" src="https://i.ytimg.com/vi/Fzq68nXrWLM/hqdefault.jpg?sqp=-oaymwEcCNACELwBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLDjHgro-XDnmDh0yAVVz4ie0iiASQ">
+              <figcaption id="B_title_1" class="grid-text">Siglent SDG6000X Arbitrary Waveform Generator Review</figcaption>
+            </figure>
+          </a>
+        </div>
+        <div class="B2">
+          <a id="B_videoId_2" href="https://youtube.com/watch?v=iH9_xtulyws" target="_blank">
+            <figure class="grid-item">
+              <img id="B_thumbnail_2" class="grid-image" src="https://i.ytimg.com/vi/iH9_xtulyws/hqdefault.jpg?sqp=-oaymwEcCNACELwBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLAJK-77KFyU7Js5ZU0D4ZnKnaV4UA">
+              <figcaption id="B_title_2" class="grid-text">Arduino and Servos: How to Make a Laser Turret with XOD</figcaption>
+            </figure>
+          </a>
+        </div>
+        <div class="B3">
+          <a id="B_videoId_3" href="https://youtube.com/watch?v=8rRRvgjLjZU" target="_blank">
+            <figure class="grid-item">
+              <img id="B_thumbnail_3" class="grid-image" src="https://i.ytimg.com/vi/8rRRvgjLjZU/hqdefault.jpg?sqp=-oaymwEcCNACELwBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLCAqwUv_OUkYyYS20KkWwtxCrhYBg">
+              <figcaption id="B_title_3" class="grid-text">Fun with 1.1GHz Potato chips</figcaption>
+            </figure>
+          </a>
+        </div>
+        <div class="C0">
+          <a id="C_videoId_0" href="https://youtube.com/watch?v=s4vG8UrXcLE" target="_blank">
+            <figure class="grid-item">
+              <img id="C_thumbnail_0" class="grid-image" src="https://i.ytimg.com/vi/s4vG8UrXcLE/hqdefault.jpg?sqp=-oaymwEcCNACELwBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLAVfwwM1ebz6Ie6Lq6PN2NjIL6iQA">
+              <figcaption id="C_title_0" class="grid-text">Episode 57: The Pump inside your Chainsaw Carburetor/ How it causes Bog & Chainsaw wont start</figcaption>
+            </figure>
+          </a>
+        </div>
+        <div class="C1">
+          <a id="C_videoId_1" href="https://youtube.com/watch?v=DdFxpWJ-DDw" target="_blank">
+            <figure class="grid-item">
+              <img id="C_thumbnail_1" class="grid-image" src="https://i.ytimg.com/vi/DdFxpWJ-DDw/hqdefault.jpg?sqp=-oaymwEcCNACELwBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLCYNb9g79D1yoYS1vo6wLEAciO-ZA">
+              <figcaption id="C_title_1" class="grid-text">Episode 56: Hidden Filter Inside your Chainsaw Needs Cleaning (if Chainsaw wont Start/Servicing)</figcaption>
+            </figure>
+          </a>
+        </div>
+        <div class="C2">
+          <a id="C_videoId_2" href="https://youtube.com/watch?v=_8xf3uMuH_A" target="_blank">
+            <figure class="grid-item">
+              <img id="C_thumbnail_2" class="grid-image" src="https://i.ytimg.com/vi/_8xf3uMuH_A/hqdefault.jpg?sqp=-oaymwEcCNACELwBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLCLkMI4J0ELGH70w74NE1YmdpsP1A">
+              <figcaption id="C_title_2" class="grid-text">Episode 55: This is a Common Cause of 2 Stroke Damage (Chainsaw, Trimmer etc)</figcaption>
+            </figure>
+          </a>
+        </div>
+        <div class="C3">
+          <a id="C_videoId_3" href="https://youtube.com/watch?v=dgmRXb0vcPk" target="_blank">
+            <figure class="grid-item">
+              <img id="C_thumbnail_3" class="grid-image" src="https://i.ytimg.com/vi/dgmRXb0vcPk/hqdefault.jpg?sqp=-oaymwEcCNACELwBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLCWAXeka7fxWSm-rvGh2WQ7S2oU-w">
+              <figcaption id="C_title_3" class="grid-text">Episode 54: CARBURETOR ADJUSTMENTS effected by these common AIR LEAKS</figcaption>
+            </figure>
+          </a>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction: column;align-items: center;padding:10px">
+      <p>Which one is the odd one out? Find the right answer to start the experiment!</p>
+      <script>
+        function alertWrongAnswer(){
+          alert("Are you sure? Channels A and B seem to both have content related to electronics, while channel C seems to be about repairing mechanical objects.")
+        }
+        
+        function alertRightAnswer(){
+          alert("You're right! Channel C is the odd one out.\nYou may now start the experiment!")
+          hideOverlay()
+        }
+      </script>
+      <div>
+        <crowd-button id='A-button' form-action="none" variant="normal" data-testid="none" onclick="alertWrongAnswer()">A</crowd-button>
+        <crowd-button id='B-button' form-action="none" variant="normal" data-testid="none" onclick="alertWrongAnswer()">B</crowd-button>
+        <crowd-button id='C-button' form-action="none" variant="normal" data-testid="none" onclick="alertRightAnswer()">C</crowd-button>
+      </div>
+    </div>
+    <div style="display:flex;justify-content: center;">
+      <crowd-button style="display:none" id='start-button' form-action="none" variant="primary" data-testid="none" onclick="hideOverlay()">Start experiment</crowd-button>
+    </div>
+  </div>
+</div>
+<crowd-form answer-format="flatten-objects">
+  <p id="json-data" hidden>${jsons}</p>
+  <div class="split left">
+    <div class="container">
+      <div class="A">
+        <div class="section-title">
+          <a id="A_channelId" href="BLANKCHANNELIDREF" target="_blank">
+          <span id="A_channelTitle" class="channel-name">BLANKTITLE</span>
+          </a>
+        </div>
+      </div>
+      <div class="B">
+        <div class="section-title">
+          <a id="B_channelId" href="BLANKCHANNELIDREF" target="_blank">
+          <span id="B_channelTitle" class="channel-name">BLANKTITLE</span>
+          </a>
+        </div>
+      </div>
+      <div class="C">
+        <div class="section-title">
+          <a id="C_channelId" href="BLANKCHANNELIDREF" target="_blank">
+          <span id="C_channelTitle" class="channel-name">BLANKTITLE</span>
+          </a>
+        </div>
+      </div>
+      <div class="A0">
+        <a id="A_videoId_0" href="BLANKVIDEOIDREF" target="_blank">
+          <figure class="grid-item">
+            <img id="A_thumbnail_0" class="grid-image" src="BLANKTHUMBNAIL">
+            <figcaption id="A_title_0" class="grid-text">BLANKCAPTION</figcaption>
+          </figure>
+        </a>
+      </div>
+      <div class="A1">
+        <a id="A_videoId_1" href="BLANKVIDEOIDREF" target="_blank">
+          <figure class="grid-item">
+            <img id="A_thumbnail_1" class="grid-image" src="BLANKTHUMBNAIL">
+            <figcaption id="A_title_1" class="grid-text">BLANKCAPTION</figcaption>
+          </figure>
+        </a>
+      </div>
+      <div class="A2">
+        <a id="A_videoId_2" href="BLANKVIDEOIDREF" target="_blank">
+          <figure class="grid-item">
+            <img id="A_thumbnail_2" class="grid-image" src="BLANKTHUMBNAIL">
+            <figcaption id="A_title_2" class="grid-text">BLANKCAPTION</figcaption>
+          </figure>
+        </a>
+      </div>
+      <div class="A3">
+        <a id="A_videoId_3" href="BLANKVIDEOIDREF" target="_blank">
+          <figure class="grid-item">
+            <img id="A_thumbnail_3" class="grid-image" src="BLANKTHUMBNAIL">
+            <figcaption id="A_title_3" class="grid-text">BLANKCAPTION</figcaption>
+          </figure>
+        </a>
+      </div>
+      <div class="B0">
+        <a id="B_videoId_0" href="BLANKVIDEOIDREF" target="_blank">
+          <figure class="grid-item">
+            <img id="B_thumbnail_0" class="grid-image" src="BLANKTHUMBNAIL">
+            <figcaption id="B_title_0" class="grid-text">BLANKCAPTION</figcaption>
+          </figure>
+        </a>
+      </div>
+      <div class="B1">
+        <a id="B_videoId_1" href="BLANKVIDEOIDREF" target="_blank">
+          <figure class="grid-item">
+            <img id="B_thumbnail_1" class="grid-image" src="BLANKTHUMBNAIL">
+            <figcaption id="B_title_1" class="grid-text">BLANKCAPTION</figcaption>
+          </figure>
+        </a>
+      </div>
+      <div class="B2">
+        <a id="B_videoId_2" href="BLANKVIDEOIDREF" target="_blank">
+          <figure class="grid-item">
+            <img id="B_thumbnail_2" class="grid-image" src="BLANKTHUMBNAIL">
+            <figcaption id="B_title_2" class="grid-text">BLANKCAPTION</figcaption>
+          </figure>
+        </a>
+      </div>
+      <div class="B3">
+        <a id="B_videoId_3" href="BLANKVIDEOIDREF" target="_blank">
+          <figure class="grid-item">
+            <img id="B_thumbnail_3" class="grid-image" src="BLANKTHUMBNAIL">
+            <figcaption id="B_title_3" class="grid-text">BLANKCAPTION</figcaption>
+          </figure>
+        </a>
+      </div>
+      <div class="C0">
+        <a id="C_videoId_0" href="BLANKVIDEOIDREF" target="_blank">
+          <figure class="grid-item">
+            <img id="C_thumbnail_0" class="grid-image" src="BLANKTHUMBNAIL">
+            <figcaption id="C_title_0" class="grid-text">BLANKCAPTION</figcaption>
+          </figure>
+        </a>
+      </div>
+      <div class="C1">
+        <a id="C_videoId_1" href="BLANKVIDEOIDREF" target="_blank">
+          <figure class="grid-item">
+            <img id="C_thumbnail_1" class="grid-image" src="BLANKTHUMBNAIL">
+            <figcaption id="C_title_1" class="grid-text">BLANKCAPTION</figcaption>
+          </figure>
+        </a>
+      </div>
+      <div class="C2">
+        <a id="C_videoId_2" href="BLANKVIDEOIDREF" target="_blank">
+          <figure class="grid-item">
+            <img id="C_thumbnail_2" class="grid-image" src="BLANKTHUMBNAIL">
+            <figcaption id="C_title_2" class="grid-text">BLANKCAPTION</figcaption>
+          </figure>
+        </a>
+      </div>
+      <div class="C3">
+        <a id="C_videoId_3" href="BLANKVIDEOIDREF" target="_blank">
+          <figure class="grid-item">
+            <img id="C_thumbnail_3" class="grid-image" src="BLANKTHUMBNAIL">
+            <figcaption id="C_title_3" class="grid-text">BLANKCAPTION</figcaption>
+          </figure>
+        </a>
+      </div>
+    </div>
+  </div>
+  <div class="split right">
+    <div style="display: flex;justify-content: center;">
+      <div style="padding-left: 5vmin;display:flex;flex-direction: column;">
+        <h2 style="padding:10px">Which channel is the odd one out?</h2>
+        <crowd-radio-group style="display:flex;flex-direction: column;">
+          <crowd-radio-button id="a" name="a" value="a">A</crowd-radio-button>
+          <crowd-radio-button id="b" name="b" value="b">B</crowd-radio-button>
+          <crowd-radio-button id="c" name="c" value="c">C</crowd-radio-button>
+        </crowd-radio-group>
+        <crowd-button id='submit-button' form-action="none" variant="primary" data-testid="crowd-submit1" style="padding-top:5vmin" onclick="submitButton()">Submit</crowd-button>
+        <crowd-input hidden id="crowd-input-final" name="batch-results" label="batch-results" value="none"></crowd-input>
+        <crowd-button hidden id='submitter-button' form-action="submit" variant="primary" data-testid="crowd-submit" style="padding-top:5vmin">Submit</crowd-button>
+        <crowd-instructions link-text="View instructions" link-type="button" style="padding-top:5vmin">
+          <short-summary>
+            <p>Given three youtube channels, represented by their thumbnails, select the odd one out (least similar).</p>
+            <p><b>Shortcuts : </b></p>
+            <p><kbd>1</kbd> : Select A</p>
+            <p><kbd>2</kbd> : Select B</p>
+            <p><kbd>3</kbd> : Select C</p>
+            <p><kbd>Shift</kbd> + <kbd>Enter</kbd> : Submit</p>
+          </short-summary>
+          <detailed-instructions>
+            <p>By similarity, we mean content similarity, for example, if you are able to find one topic which is applicable for two channels, but not the third one, it would be reasonable to pick the latter as the odd one out.</p>
+            <p>Do keep in mind however, that all three channels might be related to the same topic. For example, all three channels might share content related to cars. In this instance, try to find subtopics : two channels might share more content related to sports cars, while the third one about SUVs.
+              In that case, you'd pick the channel related to SUVs.
+            </p>
+          </detailed-instructions>
+          <positive-example>
+            <p><img width="400" height="215" src="https://i.ibb.co/NW47GZ6/Screenshot-from-2022-12-15-14-20-08.png"/></p>
+            <p style="text-align:center"><b>Selected Answer : C</b></p>
+            <p>This is right, we see that channel A and B both contain content related to Britain's got talent, while C is clearly different.</p>
+          </positive-example>
+          <negative-example>
+            <p><img width="400" height="215" src="https://i.ibb.co/TwRNRZH/Screenshot-from-2022-12-15-14-23-48.png"/></p>
+            <p style="text-align:center"><b>Selected Answer : C</b></p>
+            <p>This is wrong, we see that channel A and C both contain content related to design / UI skills and are similar, while B is the odd one out.</p>
+          </negative-example>
+        </crowd-instructions>
+        <div style="font-family: Roboto,Arial,sans-serif;padding-top:5vmin">
+          <span>Progress :</span> <span id="current-step">1</span><span>/${length}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+</crowd-form>
+<script>
+  function doc_keyUp(e) {
+  
+    // this would test for whichever key is 40 (down arrow) and the ctrl key at the same time
+    if (e.key === '1') {
+        // call your function to do the thing
+        const checkbox = document.getElementById('a')
+        checkbox.click()
+    }else if (e.key === '2'){
+        const checkbox = document.getElementById('b')
+        checkbox.click()
+    }else if (e.key === '3'){
+        const checkbox = document.getElementById('c')
+        checkbox.click()
+    }
+  
+    if (e.shiftKey && e.key === 'Enter') {
+          // call your function to do the thing
+        const submit = document.getElementById('submit-button')
+        submit.click()
+      }
+  }
+  // register the handler 
+  document.addEventListener('keyup', doc_keyUp, false);
+  
+</script>
