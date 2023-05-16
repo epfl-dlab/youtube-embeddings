@@ -32,6 +32,6 @@ Unfortunately, it looks like the pushshift dumps are currently not accessible ov
 
 
 <picture style="background-color:none;visibility:visible;">
-  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/boesingerl/youtube-embeds/assets/32189761/30a57202-f838-4098-bdb4-4136b298b4d9">
-  <img alt="Shows an illustrated sun in light color mode and a moon with stars in dark color mode." src="https://github.com/boesingerl/youtube-embeds/assets/32189761/bdb9989e-b60e-458a-a317-e92a0336faef">
+  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/boesingerl/youtube-embeds/assets/32189761/073c3240-4bba-4e97-a0a4-6d899a247798">
+  <img alt="Shows an illustrated sun in light color mode and a moon with stars in dark color mode." src="https://github.com/boesingerl/youtube-embeds/assets/32189761/be595f10-c1d5-467f-83be-a91f5a9f628c">
 </picture>
