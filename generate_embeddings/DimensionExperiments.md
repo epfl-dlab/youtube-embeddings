@@ -510,7 +510,7 @@ for embed_name, embed in tqdm(embeddings.items()):
 
 for k, v in dimlabels.items():
     v.reset_index().to_feather(
-        data_path(f"dims/dimtrain_labels_{k}.feather.zstd"), compression="zstd"
+        data_path(f"dims/classification/{k}_partisan.feather.zstd"), compression="zstd"
     )
 ```
 
