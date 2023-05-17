@@ -6,7 +6,7 @@ jupyter:
       extension: .md
       format_name: markdown
       format_version: '1.3'
-      jupytext_version: 1.14.5
+      jupytext_version: 1.14.1
   kernelspec:
     display_name: Python 3 (ipykernel)
     language: python
@@ -49,8 +49,8 @@ replace_dict = {
     "reddit_avg": "Subreddit",
 }
 
-ord_manual = pd.read_csv(data_path("figures_in/dimgen_plot_df_new.csv")).replace(replace_dict)
-ord_auto = pd.read_csv(data_path("figures_in/dimgen_plot_df_auto.csv")).replace(replace_dict)
+ord_manual = pd.read_csv(data_path("figures_in/dimgen_seeds_manual.csv")).replace(replace_dict)
+ord_auto = pd.read_csv(data_path("figures_in/dimgen_seeds_auto.csv")).replace(replace_dict)
 ord_label = pd.read_csv(data_path("figures_in/ord_scores_train_label.csv"))
 ord_reddit = pd.read_csv(data_path("figures_in/ordering_train_reddit.csv")).rename(
     columns=replace_dict

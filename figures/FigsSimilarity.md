@@ -6,18 +6,19 @@ jupyter:
       extension: .md
       format_name: markdown
       format_version: '1.3'
-      jupytext_version: 1.14.5
+      jupytext_version: 1.14.1
   kernelspec:
     display_name: Python 3 (ipykernel)
     language: python
     name: python3
 ---
 
-# Plotting Mturk Similarity Experiment
+# Similarity
 
 Raw results are filtered and processed in the MturkResults notebook.
 
 Here, we load the processed (and public data) to plot it.
+
 
 ```python
 %load_ext autoreload
@@ -38,12 +39,16 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from youtube_topics.plotting.utils import set_size
+from youtube_topics.plotting.similarity import fraction_plot_df, plot_df_similarity, plot_embed_similarity
 
 
 from youtube_topics import data_path
 
 sns.set_style("whitegrid")
 ```
+
+## Semantics 
+
 
 ### Load data
 
@@ -55,92 +60,6 @@ full_df_agreement = pd.read_json(
 with_overall = pd.concat(
     (full_df_agreement, full_df_agreement.assign(embed_data="overall"))
 )
-```
-
-## Plotting functions
-
-
-```python
-def plot_df_similarity(df, embed_data):
-    df_tmp = df[df["embed_data"] == embed_data].copy()
-
-    agg_dfs = []
-
-    for agg_num in np.arange(4) + 2:
-        df_tmp["agglist"] = df_tmp.apply(
-            lambda row: [
-                mode == exp
-                for agree, exp, mode in zip(
-                    row["agree_count"], row["exp_result"], row["mode_res"]
-                )
-                if agree >= agg_num
-            ],
-            axis=1,
-        )
-        agg_df = (
-            df_tmp.groupby("embed")["agglist"]
-            .apply(lambda x: np.mean(list(chain.from_iterable(x))))
-            .to_frame("agg")
-            .assign(agg_num=agg_num)
-        )
-        agg_dfs.append(agg_df)
-
-    return pd.concat(agg_dfs).reset_index()
-
-
-def plot_embed_similarity(ax, plot_df):
-    sns.barplot(
-        plot_df,
-        x="agg_num",
-        y="agg",
-        hue="embed",
-        ax=ax,
-        hue_order=["reddit", "content", "recomm"],
-    )
-
-    for cont in ax.containers:
-        ax.bar_label(cont, fmt="%.2f")
-
-    ax.get_legend().remove()
-
-
-def fraction_plot_df(full_df_agreement, ax, fontsize=12):
-    df_tmp = full_df_agreement
-
-    df_tmp["agglist"] = df_tmp.apply(
-        lambda row: [
-            mode == exp
-            for agree, exp, mode in zip(
-                row["agree_count"], row["exp_result"], row["mode_res"]
-            )
-            if agree >= 2
-        ],
-        axis=1,
-    )
-    agg_df = (
-        df_tmp.groupby(["embed", "frac"])["agglist"]
-        .apply(lambda x: np.mean(list(chain.from_iterable(x))))
-        .to_frame("agg")
-        .reset_index()
-    )
-
-    sns.barplot(
-        agg_df,
-        x="frac",
-        hue="embed",
-        y="agg",
-        hue_order=["reddit", "content", "recomm"],
-        ax=ax,
-    )
-
-    for cont in ax.containers:
-        ax.bar_label(cont, fmt="%.2f")
-
-    ax.set_xlabel("q", fontsize=fontsize)
-    ax.set_ylabel("Agreement between Workers and Embedding", fontsize=fontsize)
-    ax.set_title(
-        "Agreement between Workers and Embedding as a function of q", fontsize=fontsize
-    )
 ```
 
 ## Actual plot 

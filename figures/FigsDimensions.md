@@ -6,7 +6,7 @@ jupyter:
       extension: .md
       format_name: markdown
       format_version: '1.3'
-      jupytext_version: 1.14.5
+      jupytext_version: 1.14.1
   kernelspec:
     display_name: Python 3 (ipykernel)
     language: python
@@ -30,6 +30,8 @@ sys.path += [".."]
 
 import matplotlib.pyplot as plt
 import pandas as pd
+
+from contextlib import redirect_stderr, redirect_stdout
 
 from youtube_topics import data_path
 from youtube_topics.plotting.social_dim_reddit import many_densities_plot
@@ -61,7 +63,7 @@ reddit_embed = pd.read_feather(data_path("embeds/reddit.feather.zstd")).set_inde
 
 # get dimension
 reddit_dim = pd.read_feather(data_path("dims/reddit.feather.zstd"))
-reddit_dim = reddit_dim.set_index("index").loc[reddit_embed.index]
+reddit_dim = reddit_dim.set_index("channelId").loc[reddit_embed.index]
 
 # topic dataframe
 aggdf = pd.read_feather(data_path("per_channel_aggs.feather.zstd"))
@@ -84,27 +86,12 @@ cmap_dict = {"partisan": "coolwarm", "gender": "PuOr", "age": "PiYG"}
 #### Read channel names, make them unique
 
 ```python
-chann = pd.read_feather(
-    data_path("filtered_channels_default_playlist_flattened.feather.zstd")
-)
-chann["chanId"] = chann["playlistId"].apply(lambda x: "UC" + x[2:])
-chan2 = chann.set_index("chanId")[["snippet.title"]].join(reddit_dim[[]], how="inner")
-
-
-# deduplicate
-test = chan2.reset_index()
-
-test["id"] = test.groupby("snippet.title").cumcount().add(1)
-
-test["chanName"] = test["snippet.title"]
-test.loc[test.id != 1, "chanName"] = (
-    test[test.id != 1]["snippet.title"]
-    + " ("
-    + test[test.id != 1]["id"].astype(str)
-    + ")"
-)
-
-nondup_channame = test.set_index("index")["chanName"]
+chan_title = pd.read_feather(data_path('channel_title.feather.zstd')).set_index('channelId')
+is_dup = chan_title['channelTitle'].duplicated()
+chan_title['channelDedup'] = chan_title['channelTitle']
+chan_title.loc[is_dup, 'channelDedup'] = chan_title.loc[is_dup, 'channelDedup'] + chan_title.loc[is_dup].index
+chan_title['channelTitle'] = chan_title['channelDedup']
+del chan_title['channelDedup']
 ```
 
 #### Add channel names
@@ -114,35 +101,38 @@ cluster_df = (
     dim_topic[["topic"]].rename_axis("name").rename(columns={"topic": "cluster_name"})
 )
 cluster_df["cluster_id"] = cluster_df.cluster_name.astype("category").cat.codes
-cluster_df = cluster_df.join(nondup_channame).set_index("chanName").rename_axis("name")
+cluster_df = cluster_df.join(chan_title).set_index("channelTitle").rename_axis("name")
 
 reddit_dim_nondup = (
-    reddit_dim.join(nondup_channame).set_index("chanName").rename_axis("community")
+    reddit_dim.join(chan_title).set_index("channelTitle").rename_axis("community")
 )
 ```
 
 ## Plot percentilized
 
-```python jupyter={"outputs_hidden": true}
-many_densities_plot(
-    ["age", "gender", "partisan"], cluster_df, reddit_dim_nondup, percentilize=True
-);
+```python tags=[]
+with redirect_stderr(None):
+    many_densities_plot(
+            ["age", "gender", "partisan"], cluster_df, reddit_dim_nondup, percentilize=True
+    );
 ```
 
 ## Plot percentilized singlecol
 
 ```python
-many_densities_plot(
-    ["age", "gender", "partisan"], cluster_df, reddit_dim_nondup, single_column=True
-)
+with redirect_stderr(None):
+    many_densities_plot(
+        ["age", "gender", "partisan"], cluster_df, reddit_dim_nondup, single_column=True
+    )
 plt.savefig(data_path("figures_out/dimensions_singlecol.pdf"), dpi=300, bbox_inches="tight", pad_inches=0)
 ```
 
 ## Plot large with channel names
 
 ```python
-many_densities_plot(
-    ["age", "gender", "partisan"], cluster_df, reddit_dim_nondup, percentilize=False
-)
+with redirect_stderr(None), redirect_stdout(None):
+    many_densities_plot(
+        ["age", "gender", "partisan"], cluster_df, reddit_dim_nondup, percentilize=False
+    )
 plt.savefig(data_path("figures_out/dimensions_fullcol.pdf"), dpi=300, bbox_inches="tight", pad_inches=0)
 ```

@@ -138,7 +138,7 @@ def answer_df(fulldf, dimensions=["partisan"]):
     return per_hit
 
 
-def plot_dim_bins(df, xs, ys, xcol="dimnorm", ycol="nessnorm"):
+def plot_dim_bins(df, xs, ys, xcol="dimnorm", ycol="nessnorm", title_col='channelTitle'):
     """Plot dimension dataframe with horizontal and vertical lines representing bins"""
     fig = px.scatter(
         df,
@@ -147,7 +147,7 @@ def plot_dim_bins(df, xs, ys, xcol="dimnorm", ycol="nessnorm"):
         color="topic",
         marginal_x="histogram",
         marginal_y="violin",
-        hover_data=["label", "title"],
+        hover_data=["label", title_col],
     )
 
     for x in xs:
@@ -247,8 +247,7 @@ def topic_refetch(df, topic, xs, ys, dim):
 
 
 def get_bt_topic(
-    df, n_per_label, pair_per_channel, seed=1, batch_size=50, oversample=1
-):
+    df, n_per_label, pair_per_channel, seed=1, batch_size=50, oversample=1):
     """Setup bradley terry samples for topic"""
     
     sampled = sample_per_label(df, n_per_label, seed=seed, oversample=oversample)
@@ -268,7 +267,16 @@ def dim_corrs(rankdf, dims, dim="partisan"):
     return scipy.stats.kendalltau(fullrank[dim], fullrank[f"reddit_{dim}"]).correlation
 
 
-def plot_reg_correlation(rankdf, dim, default_dims, ax=None):
+def plot_reg_correlation(rankdf, dim, default_dims, ax=None,
+                         saved_dims_path='dims/regression_per_category',
+                         container_label=True,
+                         legend=True,
+                         use_hue=True,
+                         order=None,
+                         x_label=True,
+                         y_label=True,
+                         replace_dict=None
+                        ):
     """Plot correlation between Bradley terry ranks and dimension ranks obtained
     from regression training on our baseline reddit dimensions
     """
@@ -276,16 +284,17 @@ def plot_reg_correlation(rankdf, dim, default_dims, ax=None):
         fig, ax = plt.subplots()
 
     recomm_reg = pd.read_feather(
-        data_path(f"dim_regression_cat/recomm_{dim}.feather.zstd")
+        data_path(f"{saved_dims_path}/recomm_{dim}.feather.zstd")
     ).set_index("channelId")
     reddit_reg = pd.read_feather(
-        data_path(f"dim_regression_cat/reddit_{dim}.feather.zstd")
+        data_path(f"{saved_dims_path}/reddit_{dim}.feather.zstd")
     ).set_index("channelId")
     content_reg = pd.read_feather(
-        data_path(f"dim_regression_cat/content_{dim}.feather.zstd")
+        data_path(f"{saved_dims_path}/content_{dim}.feather.zstd")
     ).set_index("channelId")
 
     dims_dict = {"recomm": recomm_reg, "reddit": reddit_reg, "content": content_reg}
+    
     results_df = (
         pd.DataFrame(
             {
@@ -295,34 +304,40 @@ def plot_reg_correlation(rankdf, dim, default_dims, ax=None):
         )
         .rename_axis("embed")
         .reset_index()
-        .melt(id_vars="embed")
     )
-
+    
+    if replace_dict is not None:
+        results_df = results_df.replace(replace_dict)
+        
+    if use_hue:
+        results_df = results_df.melt(id_vars="embed")
+    
     sns.barplot(
         results_df,
-        y="value",
-        x="variable",
-        hue="embed",
-        hue_order=["content", "recomm", "reddit"],
-        order=[dim],
+        y="value" if use_hue else dim,
+        x="variable" if use_hue else 'embed',
+        hue="embed" if use_hue else None,
+        hue_order=["content", "recomm", "reddit"] if use_hue else None,
+        order=[dim] if use_hue else order,
         ax=ax,
     )
 
-    for cont in ax.containers:
-        ax.bar_label(cont, fmt="%.2f")
+    if container_label:
+        for cont in ax.containers:
+            ax.bar_label(cont, fmt="%.2f")
 
     handles, labels = ax.get_legend_handles_labels()
 
     ax.set(title="Regression train correlation vs baseline")
+    if not y_label:
+        ax.set(ylabel=None)
+    if not x_label:
+        ax.set(xlabel=None)
 
-    line = ax.plot(
-        [-0.5, 0.5],
-        [dim_corrs(rankdf, default_dims, dim=dim) for _ in range(2)],
-        c="k",
-        label="reddit baseline",
-    )
+    ax.axhline(dim_corrs(rankdf, default_dims, dim=dim), c="r", label="reddit baseline")
 
-    ax.legend(handles + line, labels + [line[0].get_label()])
+    if legend:
+        ax.legend(handles + line, labels + [line[0].get_label()], loc='lower right')
 
 
 def rank_df(answerdf, dimensions=["partisan"]):
@@ -365,21 +380,23 @@ def rank_df(answerdf, dimensions=["partisan"]):
     return df_end
 
 
-def get_rank(res, dimension):
+def get_rank(res, dimension, reverse_dim=True):
     """Compute Bradley terry rank from mturk answers df"""
     answers = answer_df(res, dimensions=[dimension])
     rank = rank_df(answers, dimensions=[dimension]).set_index("channelId")
-    return rank.applymap(lambda x: len(rank) - x)
+    return rank.applymap(lambda x: len(rank) - x) if reverse_dim else rank
 
 
-def plot_res_scatter(path, outpath, dimension, title_series):
+def plot_res_scatter(path, outpath, dimension, title_series,
+                     title_col='channelTitle', saved_dims_path='dims/regression_per_category',
+                     reverse_dim=True):
     """Plot correlation scatter plot between BT ranks and dimension ranks"""
     
     df = pd.read_csv(path)
-    df_rank = get_rank(df, dimension)
+    df_rank = get_rank(df, dimension, reverse_dim=reverse_dim)
 
     recomm_reg = pd.read_feather(
-        data_path(f"dim_regression/recomm_{dimension}.feather.zstd")
+        data_path(f"{saved_dims_path}/recomm_{dimension}.feather.zstd")
     ).set_index("channelId")
 
     tmpdf = df_rank.join(title_series).join(
@@ -393,7 +410,7 @@ def plot_res_scatter(path, outpath, dimension, title_series):
     )
 
     fig = px.scatter(
-        df_res, x=dimension, y=f"{dimension}_recomm", hover_data=["title", "url"]
+        df_res, x=dimension, y=f"{dimension}_recomm", hover_data=[title_col, "url"]
     )
 
     # Get HTML representation of plotly.js and this figure
@@ -437,11 +454,11 @@ def plot_res_scatter(path, outpath, dimension, title_series):
         f.write(html_str)
 
 
-def plot_corr_csv(path, dimension, default_dims, ax=None):
+def plot_corr_csv(path, dimension, default_dims, ax=None, reverse_dim=True, **kwargs):
     """Load mturk csv results and plot correlation with our regression
     trained dimension ranks"""
     
     df = pd.read_csv(path)
-    df_rank = get_rank(df, dimension)
+    df_rank = get_rank(df, dimension, reverse_dim=reverse_dim)
 
-    plot_reg_correlation(df_rank, dimension, default_dims, ax=ax)
+    plot_reg_correlation(df_rank, dimension, default_dims, ax=ax, **kwargs)

@@ -1,0 +1,341 @@
+bias,partisan,embed
+left,0.31,Reddit
+left,0.18,Reddit
+left,0.01,Reddit
+right,0.31,Reddit
+left,0.01,Reddit
+right,0.94,Reddit
+left,0.28,Reddit
+right,0.84,Reddit
+left,0.25,Reddit
+left,0.29,Reddit
+left,0.18,Reddit
+right,0.49,Reddit
+left,0.4,Reddit
+left,0.12,Reddit
+right,0.24,Reddit
+left,0.08,Reddit
+right,0.93,Reddit
+left,0.04,Reddit
+right,0.99,Reddit
+left,0.4,Reddit
+left,0.29,Reddit
+right,0.25,Reddit
+left,0.23,Reddit
+left,0.23,Reddit
+left,0.15,Reddit
+right,0.93,Reddit
+right,0.65,Reddit
+left,0.53,Reddit
+left,0.07,Reddit
+left,0.24,Reddit
+right,0.83,Reddit
+right,0.6,Reddit
+left,0.02,Reddit
+left,0.07,Reddit
+left,0.22,Reddit
+right,0.73,Reddit
+right,0.96,Reddit
+left,0.17,Reddit
+right,0.56,Reddit
+left,0.08,Reddit
+right,0.9,Reddit
+left,0.03,Reddit
+left,0.45,Reddit
+left,0.09,Reddit
+right,0.98,Reddit
+left,0.1,Reddit
+left,0.05,Reddit
+right,0.95,Reddit
+right,0.17,Reddit
+left,0.32,Reddit
+left,0.16,Reddit
+left,0.15,Reddit
+left,0.39,Reddit
+right,0.66,Reddit
+right,0.9,Reddit
+left,0.32,Reddit
+right,0.93,Reddit
+left,0.46,Reddit
+right,0.93,Reddit
+left,0.23,Reddit
+left,0.01,Reddit
+right,0.77,Reddit
+left,0.26,Reddit
+left,0.1,Reddit
+right,0.98,Reddit
+left,0.24,Reddit
+right,0.93,Reddit
+left,0.06,Reddit
+right,0.26,Reddit
+right,0.85,Reddit
+right,0.96,Reddit
+left,0.23,Reddit
+left,0.05,Reddit
+right,0.69,Reddit
+left,0.15,Reddit
+right,0.77,Reddit
+left,0.1,Reddit
+left,0.1,Reddit
+left,0.21,Reddit
+right,0.64,Reddit
+left,0.22,Reddit
+left,0.1,Reddit
+right,0.96,Reddit
+left,0.29,Reddit
+left,0.08,Reddit
+left,0.23,Recommendation
+left,0.2,Recommendation
+left,0.04,Recommendation
+right,0.53,Recommendation
+left,0.13,Recommendation
+right,0.85,Recommendation
+left,0.32,Recommendation
+right,0.84,Recommendation
+left,0.24,Recommendation
+left,0.3,Recommendation
+left,0.24,Recommendation
+right,0.49,Recommendation
+left,0.18,Recommendation
+left,0.13,Recommendation
+right,0.23,Recommendation
+left,0.19,Recommendation
+right,0.79,Recommendation
+left,0.15,Recommendation
+right,0.85,Recommendation
+left,0.27,Recommendation
+left,0.17,Recommendation
+right,0.29,Recommendation
+left,0.42,Recommendation
+left,0.46,Recommendation
+left,0.36,Recommendation
+right,0.71,Recommendation
+right,0.87,Recommendation
+left,0.39,Recommendation
+left,0.13,Recommendation
+left,0.49,Recommendation
+right,0.63,Recommendation
+right,0.17,Recommendation
+left,0.1,Recommendation
+left,0.23,Recommendation
+left,0.21,Recommendation
+right,0.84,Recommendation
+right,0.76,Recommendation
+left,0.21,Recommendation
+right,0.63,Recommendation
+left,0.12,Recommendation
+right,0.63,Recommendation
+left,0.13,Recommendation
+left,0.55,Recommendation
+left,0.32,Recommendation
+right,0.66,Recommendation
+left,0.06,Recommendation
+left,0.23,Recommendation
+right,0.6,Recommendation
+right,0.29,Recommendation
+left,0.41,Recommendation
+left,0.42,Recommendation
+left,0.16,Recommendation
+left,0.12,Recommendation
+right,0.68,Recommendation
+right,0.62,Recommendation
+left,0.27,Recommendation
+right,0.82,Recommendation
+left,0.09,Recommendation
+right,0.86,Recommendation
+left,0.31,Recommendation
+left,0.19,Recommendation
+right,0.67,Recommendation
+left,0.34,Recommendation
+left,0.22,Recommendation
+right,0.64,Recommendation
+left,0.2,Recommendation
+right,0.8,Recommendation
+left,0.23,Recommendation
+right,0.22,Recommendation
+right,0.76,Recommendation
+right,0.61,Recommendation
+left,0.54,Recommendation
+left,0.17,Recommendation
+right,0.45,Recommendation
+left,0.33,Recommendation
+right,0.75,Recommendation
+left,0.1,Recommendation
+left,0.28,Recommendation
+left,0.16,Recommendation
+right,0.82,Recommendation
+left,0.09,Recommendation
+left,0.55,Recommendation
+right,0.92,Recommendation
+left,0.46,Recommendation
+left,0.66,Recommendation
+left,0.18,Content
+left,0.41,Content
+left,0.22,Content
+right,0.44,Content
+left,0.32,Content
+right,0.69,Content
+left,0.56,Content
+right,0.56,Content
+left,0.26,Content
+left,0.37,Content
+left,0.1,Content
+right,0.5,Content
+left,0.48,Content
+left,0.17,Content
+right,0.45,Content
+left,0.42,Content
+right,0.55,Content
+left,0.43,Content
+right,0.32,Content
+left,0.3,Content
+left,0.39,Content
+right,0.54,Content
+left,0.21,Content
+left,0.46,Content
+left,0.5,Content
+right,0.2,Content
+right,0.53,Content
+left,0.34,Content
+left,0.22,Content
+left,0.65,Content
+right,0.44,Content
+right,0.26,Content
+left,0.24,Content
+left,0.2,Content
+left,0.31,Content
+right,0.54,Content
+right,0.48,Content
+left,0.5,Content
+right,0.58,Content
+left,0.39,Content
+right,0.24,Content
+left,0.15,Content
+left,0.54,Content
+left,0.27,Content
+right,0.52,Content
+left,0.34,Content
+left,0.2,Content
+right,0.28,Content
+right,0.28,Content
+left,0.48,Content
+left,0.43,Content
+left,0.23,Content
+left,0.26,Content
+right,0.47,Content
+right,0.49,Content
+left,0.29,Content
+right,0.48,Content
+left,0.18,Content
+right,0.46,Content
+left,0.45,Content
+left,0.3,Content
+right,0.54,Content
+left,0.34,Content
+left,0.24,Content
+right,0.49,Content
+left,0.34,Content
+right,0.53,Content
+left,0.25,Content
+right,0.39,Content
+right,0.43,Content
+right,0.41,Content
+left,0.57,Content
+left,0.1,Content
+right,0.3,Content
+left,0.46,Content
+right,0.45,Content
+left,0.17,Content
+left,0.56,Content
+left,0.44,Content
+right,0.76,Content
+left,0.26,Content
+left,0.47,Content
+right,0.33,Content
+left,0.46,Content
+left,0.57,Content
+left,0.7495545300863526,Subbredit Dimensions
+left,0.14220770320281445,Subbredit Dimensions
+right,0.9755562662767853,Subbredit Dimensions
+left,0.12374925755014392,Subbredit Dimensions
+left,0.1354685429707132,Subbredit Dimensions
+right,0.9777036597066752,Subbredit Dimensions
+left,0.2589208205784255,Subbredit Dimensions
+right,0.43628638004294784,Subbredit Dimensions
+right,0.9289532599259834,Subbredit Dimensions
+right,0.9860419427057158,Subbredit Dimensions
+left,0.4712843240279618,Subbredit Dimensions
+left,0.7493032393658337,Subbredit Dimensions
+right,0.9152464933522182,Subbredit Dimensions
+right,0.9961621053593457,Subbredit Dimensions
+left,0.1366793073513958,Subbredit Dimensions
+right,0.9938547996527619,Subbredit Dimensions
+left,0.3324576232466761,Subbredit Dimensions
+left,0.3449079362178462,Subbredit Dimensions
+right,0.9553844748023941,Subbredit Dimensions
+left,0.2647918855941883,Subbredit Dimensions
+right,0.9899483711792388,Subbredit Dimensions
+right,0.6987252707086399,Subbredit Dimensions
+left,0.18791976972632157,Subbredit Dimensions
+left,0.36948873760679857,Subbredit Dimensions
+left,0.2514506327957235,Subbredit Dimensions
+left,0.00036551377530040665,Subbredit Dimensions
+right,0.9874811531959611,Subbredit Dimensions
+left,0.5127244483026454,Subbredit Dimensions
+right,0.9837346369991319,Subbredit Dimensions
+left,0.25129072051902956,Subbredit Dimensions
+left,0.3309270343126057,Subbredit Dimensions
+left,0.011605062365787911,Subbredit Dimensions
+right,0.9874354639740486,Subbredit Dimensions
+left,0.2009640425823548,Subbredit Dimensions
+left,0.32309133275460317,Subbredit Dimensions
+right,0.9624434595878832,Subbredit Dimensions
+right,0.9939233334856308,Subbredit Dimensions
+right,0.9953168547539636,Subbredit Dimensions
+right,0.6017498971992506,Subbredit Dimensions
+left,0.22568191163704482,Subbredit Dimensions
+left,0.24199296385982547,Subbredit Dimensions
+left,0.32667793667473843,Subbredit Dimensions
+left,0.04854479828208526,Subbredit Dimensions
+left,0.15066020925663637,Subbredit Dimensions
+left,0.4421117558367981,Subbredit Dimensions
+left,0.2502627130259972,Subbredit Dimensions
+right,0.9175081098368895,Subbredit Dimensions
+left,0.14298441997532782,Subbredit Dimensions
+right,0.9974414035728971,Subbredit Dimensions
+right,0.9810161282953351,Subbredit Dimensions
+left,0.46187234431397634,Subbredit Dimensions
+left,0.6437382921368849,Subbredit Dimensions
+right,0.34991090601727054,Subbredit Dimensions
+left,0.9075250148489972,Subbredit Dimensions
+left,0.16080321652122265,Subbredit Dimensions
+left,0.38536574222140996,Subbredit Dimensions
+left,0.13140220222049617,Subbredit Dimensions
+left,0.18513272718965595,Subbredit Dimensions
+left,0.8129711701009732,Subbredit Dimensions
+right,0.9777950381505003,Subbredit Dimensions
+right,0.9800338100242153,Subbredit Dimensions
+right,0.5178644857678074,Subbredit Dimensions
+right,0.9965961529675149,Subbredit Dimensions
+left,0.14277881847672133,Subbredit Dimensions
+left,0.22278064604559783,Subbredit Dimensions
+left,0.6778452962946041,Subbredit Dimensions
+right,0.9538538858683236,Subbredit Dimensions
+left,0.5464887832960205,Subbredit Dimensions
+left,0.09788915794764015,Subbredit Dimensions
+right,0.5238497738383515,Subbredit Dimensions
+left,0.31845387673047926,Subbredit Dimensions
+left,0.18570384246356283,Subbredit Dimensions
+left,0.3031022981678622,Subbredit Dimensions
+right,0.9237903778498652,Subbredit Dimensions
+left,0.7492118609220085,Subbredit Dimensions
+right,0.9803079453556905,Subbredit Dimensions
+left,0.4477772193539544,Subbredit Dimensions
+left,0.4299812674190159,Subbredit Dimensions
+left,0.47765797048476266,Subbredit Dimensions
+right,0.5593959884863161,Subbredit Dimensions
+left,0.3858226344405355,Subbredit Dimensions
+right,0.9922785214967789,Subbredit Dimensions
+left,0.01510028784209805,Subbredit Dimensions
+right,0.9841915292182574,Subbredit Dimensions
+left,0.06757435920866267,Subbredit Dimensions

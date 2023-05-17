@@ -6,7 +6,7 @@ jupyter:
       extension: .md
       format_name: markdown
       format_version: '1.3'
-      jupytext_version: 1.14.5
+      jupytext_version: 1.14.1
   kernelspec:
     display_name: Python 3 (ipykernel)
     language: python
@@ -68,16 +68,13 @@ aggdf_topic = aggdf.merge(topicdf, on="topic_id")
 
 ## Name df
 
-chan_name_df = pd.read_feather(
-    data_path("old_files/filtered_channels_videos_flattened.feather.zstd")
-)
-name_df = (
-    chan_name_df[["snippet.channelId", "snippet.channelTitle"]]
-    .drop_duplicates()
-    .rename(columns={"snippet.channelId": "channelId", "snippet.channelTitle": "title"})
-)
-del chan_name_df
-title_series = name_df.set_index("channelId")["title"]
+chan_title = pd.read_feather(data_path('channel_title.feather.zstd')).set_index('channelId')
+is_dup = chan_title['channelTitle'].duplicated()
+chan_title['channelDedup'] = chan_title['channelTitle']
+chan_title.loc[is_dup, 'channelDedup'] = chan_title.loc[is_dup, 'channelDedup'] + chan_title.loc[is_dup].index
+chan_title['channelTitle'] = chan_title['channelDedup']
+del chan_title['channelDedup']
+title_series = chan_title['channelTitle']
 
 fulldim = default_dims.join(title_series).join(
     aggdf_topic.set_index("channelId")[["topic"]]
@@ -85,7 +82,7 @@ fulldim = default_dims.join(title_series).join(
 ```
 
 ```python
-px.scatter(fulldim, x="partisan", y="partisan-ness", color="topic")
+px.scatter(fulldim, x="partisan", y="partisan-ness", color="topic", hover_data=['channelTitle'])
 ```
 
 ## Sampling specific categories with specific dimensions
@@ -98,10 +95,12 @@ We select youtube channels from categories which are heavily linked with a parti
 
 We then partition our data in bins based on the dimension and dimension-ness score (within 0,5 std, 1.5 std, etc), and sample hierarchically from those bins to create our bradley terry experiment.
 
+While those experiments are technically seeded, you might get different samplings at different times if channels are deleted, deleting all their videos, etc..
+
 ```python
+# bin borders
 xs = [-5, -1.5, -0.5, 0.5, 1.5, 5]
 ys = [-5, 0, 5]
-
 ```
 
 ### Howto & style - Gender
@@ -110,7 +109,7 @@ ys = [-5, 0, 5]
 dim = "gender"
 howto_gender = topic_refetch(fulldim, "Howto & Style", xs, ys, dim)
 howto_gender_bt = get_bt_topic(howto_gender, 6, 20, seed=5).assign(dim=dim)
-howto_gender_bt.to_csv(data_path("howto_gender_bt.csv"), index=False)
+howto_gender_bt.to_csv(data_path("bt/howto_gender_bt.csv"), index=False)
 plot_dim_bins(howto_gender, xs, ys, xcol="topicdim", ycol="topicness")
 ```
 
@@ -120,7 +119,7 @@ plot_dim_bins(howto_gender, xs, ys, xcol="topicdim", ycol="topicness")
 dim = "partisan"
 news_partisan = topic_refetch(fulldim, "News & Politics", xs, ys, dim)
 news_partisan_bt = get_bt_topic(news_partisan, 6, 20, seed=5).assign(dim=dim)
-news_partisan_bt.to_csv(data_path("news_partisan_bt.csv"), index=False)
+news_partisan_bt.to_csv(data_path("bt/news_partisan_bt.csv"), index=False)
 plot_dim_bins(news_partisan, xs, ys, xcol="topicdim", ycol="topicness")
 ```
 
@@ -130,61 +129,44 @@ plot_dim_bins(news_partisan, xs, ys, xcol="topicdim", ycol="topicness")
 dim = "age"
 music_age = topic_refetch(fulldim, "Music", xs, ys, dim)
 music_age_bt = get_bt_topic(music_age, 6, 20, seed=5).assign(dim=dim)
-music_age_bt.to_csv(data_path("music_age_bt.csv"), index=False)
+music_age_bt.to_csv(data_path("bt/music_age_bt.csv"), index=False)
 plot_dim_bins(music_age, xs, ys, xcol="topicdim", ycol="topicness")
 ```
 
-```python
-path = data_path("bt_results/news_partisan_resnew.csv")
-dimension = "partisan"
-df = pd.read_csv(path)
-df_rank = get_rank(df, dimension)
-df_rank.to_csv(data_path("rankdfs/news_partisan.csv"))
-
-path = data_path("bt_results/howto_gender_resnew.csv")
-dimension = "gender"
-df = pd.read_csv(path)
-df_rank = get_rank(df, dimension)
-df_rank.to_csv(data_path("rankdfs/howto_gender.csv"))
-
-path = data_path("bt_results/music_age_resnew.csv")
-dimension = "age"
-df = pd.read_csv(path)
-df_rank = get_rank(df, dimension)
-df_rank.to_csv(data_path("rankdfs/music_age.csv"))
-```
+## Read results, get Bradley-Terry (/Plackett-Luce) rankings
 
 ```python
 fig, axs = plt.subplots(ncols=3, figsize=(15, 5))
 
-plot_corr_csv(data_path("bt_results/news_partisan_resnew.csv"), "partisan", default_dims, ax=axs[0])
-axs[0].set(title="Partisan, news category corr")
+plot_corr_csv(data_path("bt/news_partisan_res.csv"), "partisan", default_dims, ax=axs[0])
+axs[0].set(title="Partisan - News category correlation")
 
-plot_corr_csv(data_path("bt_results/howto_gender_resnew.csv"), "gender", default_dims, ax=axs[1])
-axs[1].set(title="Howto, gender category corr")
+plot_corr_csv(data_path("bt/howto_gender_res.csv"), "gender", default_dims, ax=axs[1], reverse_dim=False)
+axs[1].set(title="Gender - Howto category correlation")
 
-plot_corr_csv(data_path("bt_results/music_age_resnew.csv"), "age", default_dims, ax=axs[2])
-axs[2].set(title="Music, age category corr")
+plot_corr_csv(data_path("bt/music_age_res.csv"), "age", default_dims, ax=axs[2])
+axs[2].set(title="Age - Music category correlation")
 
 plt.suptitle("Correlation between Bradley Terry ranks & Regression training ranks")
 ```
 
 ```python
 plot_res_scatter(
-    data_path("bt_results/news_partisan_resnew.csv"),
-    data_path("news_partisan_scatter.html"),
+    data_path("bt/news_partisan_res.csv"),
+    data_path("bt/news_partisan_scatter.html"),
     "partisan",
     title_series
 )
 plot_res_scatter(
-    data_path("bt_results/howto_gender_resnew.csv"),
-    data_path("howto_gender_scatter.html"),
+    data_path("bt/howto_gender_res.csv"),
+    data_path("bt/howto_gender_scatter.html"),
     "gender",
-    title_series
+    title_series,
+    reverse_dim=False
 )
 plot_res_scatter(
-    data_path("bt_results/music_age_resnew.csv"),
-    data_path("music_age_scatter.html"),
+    data_path("bt/music_age_res.csv"),
+    data_path("bt/music_age_scatter.html"),
     "age",
     title_series
 )

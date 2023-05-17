@@ -6,7 +6,7 @@ jupyter:
       extension: .md
       format_name: markdown
       format_version: '1.3'
-      jupytext_version: 1.14.5
+      jupytext_version: 1.14.1
   kernelspec:
     display_name: Python 3 (ipykernel)
     language: python
@@ -95,11 +95,7 @@ fig_content = px.scatter(
 ```
 
 ```python
-fig_reddit
-```
-
-```python
 fig_reddit.write_html(data_path("figures_out/reddit_umap.html"))
-fig_recomm.write_html(data_path("figures/recomm_umap.html"))
+fig_recomm.write_html(data_path("figures_out/recomm_umap.html"))
 fig_content.write_html(data_path("figures_out/content_umap.html"))
 ```

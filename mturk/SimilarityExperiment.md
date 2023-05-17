@@ -6,7 +6,7 @@ jupyter:
       extension: .md
       format_name: markdown
       format_version: '1.3'
-      jupytext_version: 1.14.5
+      jupytext_version: 1.14.1
   kernelspec:
     display_name: Python 3 (ipykernel)
     language: python
@@ -79,6 +79,8 @@ fracs = [0.01, 0.005, 0.0025]
 
 used_channels = set()
 
+# oversample since we want an exact length but some channels are removed
+# might be better to do first pass, to check then second path instead
 seed = 40
 NUM_SAMPLES = 250
 ACTUAL_SAMPLES = 100
@@ -103,14 +105,17 @@ for embed_name, (embed, neigh) in embed_dict.items():
         # mark channel as used, don't use it after
         used_channels |= set(exp["A"])
 
+        # ignore those where A and B are not the closest, and where we dont have enough videos / deleted channel since collection
         mask = (exp.apply(embed_closest(embed), axis=1) == "AB") & (
             ~(mturked == "@@@None@@@").any(axis=1)
         )
 
+        # filter them with mask
         exp = exp[mask].reset_index(drop=True).head(ACTUAL_SAMPLES)
         shuf = shuf[mask].reset_index(drop=True).head(ACTUAL_SAMPLES)
         mturked = mturked[mask].reset_index(drop=True).head(ACTUAL_SAMPLES)
 
+        # make sure no nan, as many channels as we expect, same channels across sets
         assert len(exp) == (ACTUAL_SAMPLES)
         assert (
             len(exp) == len(shuf)
@@ -125,6 +130,7 @@ for embed_name, (embed, neigh) in embed_dict.items():
 
         dfs_mturk[(embed_name, frac)] = (exp, shuf, mturked)
 
+        # batch them for mturk
         df_prepped_mturk = prep_mturk_batch(mturked, batch_size=10).assign(
             frac=frac, embed=embed_name, seed=seed
         )
@@ -133,9 +139,9 @@ for embed_name, (embed, neigh) in embed_dict.items():
 
 full_df_mturk_large = pd.concat(mturk_merged).reset_index()
 
-full_df_mturk_large.to_csv(data_path("large_experiment_mturk.csv"), index=False)
+full_df_mturk_large.to_csv(data_path("similarity_experiment_mturk.csv"), index=False)
 
-with open("large_exeriment_mturk.pkl", "wb") as handle:
+with open("similarity_experiment_mturk.pkl", "wb") as handle:
     import pickle
 
     pickle.dump(full_df_mturk_large, handle)
@@ -160,8 +166,12 @@ reddit_embed = pd.read_feather(data_path("embeds/reddit.feather.zstd")).set_inde
 
 emb_dict = {"recomm": recomm_embed, "reddit": reddit_embed, "content": content_embed}
 
+# contains 460 instead of expected 450 rows because some channels were removed from dataset
+# so we re-created some hits so we have as many hits for each embed from the channels currently in the dataset
+res_path = data_path("similarity/results.csv")
+
 curr_mod_embed = read_mturk_res(
-    data_path("mturk_newest/under9_results.csv"), cols=["HITId", "embed", "frac"]
+    res_path, cols=["HITId", "embed", "frac"]
 )
 curr_mod_embed["frac"] = curr_mod_embed["frac"].astype(str)
 ```
@@ -202,27 +212,37 @@ def explode_shared_batches(df, arr_colname):
     return pd.concat(
         pd.DataFrame(x) for x in df.apply(split_fraction, axis=1)
     ).reset_index(drop=True)
+
+def filter_mode(df):
+    """Filter batches where mturker was able to answer more times than expected: probably random answer bot"""
+    lens = df['res'].apply(len)
+    mode = lens.mode().iloc[0]
+    return df[lens == mode]
 ```
 
 ### Get agreement across workers
 
 ```python
 mode_mods = (
-    curr_mod_embed.groupby(["HITId", "frac"])[["res"]]
+    curr_mod_embed
+    .groupby(['HITId', 'frac']).apply(filter_mode).reset_index(drop=True)
+    .groupby(["HITId", "frac"])[["res"]]
     .apply(lambda d: pd.DataFrame(np.stack(d.iloc[:, 0])).mode(axis=0).iloc[0].tolist())
     .to_frame("mode_res")
 )
 
 agree_count = (
-    curr_mod_embed.groupby(["HITId", "frac"])
+    curr_mod_embed
+    .groupby(['HITId', 'frac']).apply(filter_mode).reset_index(drop=True)
+    .groupby(["HITId", "frac"])
     .apply(agreement_number("res"))
     .to_frame("agree_count")
 )
 
 mod0_embed = read_mturk_res(
-    data_path("mturk_newest/under9_results.csv"),
+    res_path,
     cols=["HITId", "embed", "Input.jsons", "frac"],
-)
+).groupby(['HITId', 'frac']).apply(filter_mode).reset_index(drop=True)
 
 embed_with_input = pd.concat((mod0_embed,)).drop_duplicates(subset=["HITId"])
 embed_with_input["frac"] = embed_with_input["frac"].astype(str)
@@ -267,5 +287,5 @@ full_df_agreement["frac"] = full_df_agreement["frac"].astype("float")
 ### Save
 
 ```python
-full_df_agreement.to_feather(data_path("under9_agreement_similarity.feather.zstd"))
+full_df_agreement.to_json(data_path("figures_in/mturk_similarity_results_final.jsonl"), lines=True, orient='records')
 ```

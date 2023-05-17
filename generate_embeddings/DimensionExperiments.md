@@ -6,7 +6,7 @@ jupyter:
       extension: .md
       format_name: markdown
       format_version: '1.3'
-      jupytext_version: 1.14.5
+      jupytext_version: 1.14.1
   kernelspec:
     display_name: Python 3 (ipykernel)
     language: python
@@ -170,14 +170,14 @@ reddit_norm = reddit_embed.divide(
 # reddit_dimgen = DimenGenerator(reddit_norm)
 
 ### Load saved Dimension generators
-
-with open("data/old_files/content_dimgen_new.pkl", "rb") as handle:
+# unfortunately too large to share
+with open(data_path("content_dimgen.pkl"), "rb") as handle:
     content_dimgen = pickle.load(handle)
 
-with open("data/old_files/recomm_dimgen_new.pkl", "rb") as handle:
+with open(data_path("recomm_dimgen.pkl"), "rb") as handle:
     recomm_dimgen = pickle.load(handle)
 
-with open("data/default_dimgen_new.pkl", "rb") as handle:
+with open(data_path("reddit_dimgen.pkl"), "rb") as handle:
     reddit_dimgen = pickle.load(handle)
 ```
 
@@ -226,7 +226,7 @@ scores = {k: tau_scorer(v.partisan) for k, v in all_embeddings_auto.items()}
 
 plot_df_auto = pd.DataFrame(scores).rename_axis("agg").reset_index()
 plot_df_auto = plot_df_auto.melt(id_vars=["agg"], var_name="embed", value_name="score")
-plot_df_auto.to_csv("dimgen_plot_df_auto.csv", index=False)
+plot_df_auto.to_csv(data_path("figures_in/dimgen_seeds_auto.csv"), index=False)
 
 plot_df_auto
 ```
@@ -287,14 +287,14 @@ def get_pair_df(normed_embed):
 pairdf = get_pair_df(recomm_norm)
 
 # use subreddit pairs to get dimensions
-recomm_dim = dimdf_from_pairdf(pairdf, recomm_norm)
-reddit_dim = dimdf_from_pairdf(pairdf, reddit_norm)
-content_dim = dimdf_from_pairdf(pairdf, content_norm)
+recomm_dim_man = dimdf_from_pairdf(pairdf, recomm_norm)
+reddit_dim_man = dimdf_from_pairdf(pairdf, reddit_norm)
+content_dim_man = dimdf_from_pairdf(pairdf, content_norm)
 
 all_embeddings = {
-    "recomm": recomm_dim,
-    "reddit": reddit_dim,
-    "content": content_dim,
+    "recomm": recomm_dim_man,
+    "reddit": reddit_dim_man,
+    "content": content_dim_man,
     "reddit_avg": reddit_dim_normal,
 }
 
@@ -303,7 +303,7 @@ scores = {k: tau_scorer(v.partisan) for k, v in all_embeddings.items()}
 plot_df = pd.DataFrame(scores).rename_axis("agg").reset_index()
 
 plot_df = plot_df.melt(id_vars=["agg"], var_name="embed", value_name="score")
-plot_df.to_csv(data_path("figures_in/dimgen_plot_df_new.csv"), index=False)
+plot_df.to_csv(data_path("figures_in/dimgen_seeds_manual.csv"), index=False)
 plot_df
 ```
 
@@ -494,8 +494,8 @@ Here, we train on the full set and save the resulting predictions.
 dimlabels = {}
 
 for embed_name, embed in tqdm(embeddings.items()):
-    # Ideally, we would not predict for the classes in training set, but
-    # overall it's not such a big deal (maybe 80/44000 channels)
+    # Ideally, we would not predict for the classes in training set - leave one out
+    # overall it's not such a big deal, and dont really use this dataset (maybe 80/44000 channels)
     joined_class = embed.join(class_codes.rename("bias"), how="inner")
     X = joined_class.drop(columns=["bias"])
     y = joined_class["bias"]
@@ -510,7 +510,7 @@ for embed_name, embed in tqdm(embeddings.items()):
 
 for k, v in dimlabels.items():
     v.reset_index().to_feather(
-        data_path(f"dimtrain_labels_{k}.feather.zstd"), compression="zstd"
+        data_path(f"dims/dimtrain_labels_{k}.feather.zstd"), compression="zstd"
     )
 ```
 
@@ -640,7 +640,7 @@ for dim in tqdm(DIMS):
 
     for k, v in dims.items():
         v.to_frame(dim).reset_index().to_feather(
-            data_path(f"figures_in/dim_regression/{k}_{dim}.feather.zstd")
+            data_path(f"dims/regression_overall/{k}_{dim}.feather.zstd")
         )
 ```
 
@@ -648,7 +648,7 @@ for dim in tqdm(DIMS):
 
 ```python
 default_dims = pd.read_feather(
-    data_path("dims/default_cropped.feather.zstd")
+    data_path("dims/reddit.feather.zstd")
 ).set_index("channelId")
 aggdf = pd.read_feather(data_path("per_channel_aggs.feather.zstd"))
 topicdf = pd.read_json(data_path("id_to_topic.jsonl.gz"), lines=True)
@@ -691,15 +691,8 @@ for dim, cat in zip(tqdm(DIMS), CATS):
 
     for k, v in dims.items():
         v.to_frame(dim).reset_index().to_feather(
-            data_path(f"dim_regression_cat/{k}_{dim}.feather.zstd")
+            data_path(f"dims/regression_per_category/{k}_{dim}.feather.zstd")
         )
-```
-
-```python
-gender_df = pd.read_csv(data_path("rankdfs/howto_gender.csv")).set_index("channelId")
-recommtest = pd.read_feather(
-    data_path("dim_regression_cat/recomm_gender.feather.zstd")
-).set_index("channelId")
 ```
 
 ## Extra: Social dimensions Violin plot between known political channels and the rest

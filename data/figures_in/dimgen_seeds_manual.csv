@@ -1,0 +1,5 @@
+agg,embed,score
+kendall_tau,recomm,0.5386796146918318
+kendall_tau,reddit,0.6961860756519695
+kendall_tau,content,0.24358994439658546
+kendall_tau,reddit_avg,0.672503719946746
