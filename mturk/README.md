@@ -26,28 +26,27 @@ Then, we ask the workers to rate which one is the odd one out. If the workers ra
 
 ## Bradley terry experiment
 
-The goal of this experiment is to rate the "partisan" dimension, by computing its rank correlation with a ranking obtained from humans using a bradley-terry (plackett-luce) model.
+The goal of this experiment is to rate the social dimensions, by computing their rank correlation with a ranking obtained from humans using a bradley-terry (plackett-luce) model.
 
 ### Description
 
-Given two YouTube channels, pick the one which appeals to a more left-wing audience. (Or right-wing, randomly defined).
+Given two YouTube channels, pick the one which appeals to a [more left-wing / younger / more masculine] audience.
 
 <p align="center">
 <img src="https://user-images.githubusercontent.com/32189761/226681346-6d605869-dfe6-48b7-b966-057a338ac660.png">
 </p>
 
-We want to validate the “partisan” social dimension for each of our YouTube channels.
+We want to validate multiple social dimensions for each of our YouTube channels, mainly “partisan”, “gender” and “age”. For each dimension, we choose a YouTube video category which we assume pairs nicely with it. We have chosen “News & Politics” for the partisan dimension, “Howto & Style” for the gender dimension and “Music” for the age dimension. For each dimension, we only work with channels which mostly upload content in its paired category.
 
-Our dataset is created by sampling channels, and stratifying on their partisan and partisan-ness dimension. Bins are created according to the thresholds seen in figure below (axes are standardized). We get 25 bins and choose a total of 100 channels for this experiment, meaning 4 channels sampled per bin.
 
-<p align="center">
-<img src="https://user-images.githubusercontent.com/32189761/226685275-2288c5d6-e9d4-4d6c-a251-056dccabcde9.png">
+Our dataset is created by sampling channels, and stratifying on the dimension itself and the “-ness” dimension (which determines how much a channel is polarized towards any of the two poles). Bins are created according to the thresholds seen in figure below (axes are standardized). We get 10 bins and choose a total of 100 channels for this experiment, meaning 10 channels sampled per bin.
+
+<img src="https://github.com/boesingerl/youtube-embeds/assets/32189761/1f645447-c8e3-4af7-9e85-055e1df630fd">
 </p>
 
-We then sample pairs of channels : each channel is featured in 20 pairs, and is never paired twice with the same channel. 
+We then sample pairs of channels : each channel is featured in 20 pairs, and is never paired twice with the same channel. We get a total of 1000 channel pairs. For each pair, one worker will have to select which channel they think is the one that appeals the most to a [more left-wing / younger / more masculine] audience (randomized per user).
 
-We get a total of 1000 channel pairs. For each pair, one worker will have to select which channel they think is the one that appeals the most to a left-wing / right-wing audience (randomized per user).
+The goal of this experiment is to use the Bradley-Terry / Plackett-Luce model to use the results from workers to get a ranking for each channel with respect to the dimension. We then compare this ranking to the one obtained by our embedding dimension, using Kendall’s Rank correlation. 
 
-The goal of this experiment is to use the Bradley-Terry model to use the results from workers to get a ranking for each channel with respect to the partisan dimension. We then compare this ranking to the one obtained by our embedding partisan dimension, using Kendall’s Rank correlation.
+High correlation means that our embedding is able to capture the dimension well. We stratify by “-ness” dimension as well to enforce having channels which embody the dimension and some that don’t.
 
-High correlation means that our embedding is able to capture which channels have a more right-wing or left-wing audience. We stratify by partisan-ness to enforce having highly political as well as less political channels in our dataset.
