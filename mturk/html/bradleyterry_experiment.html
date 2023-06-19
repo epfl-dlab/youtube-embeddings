@@ -1,670 +1,993 @@
-<!-- You must include this JavaScript file -->
-<script src="https://assets.crowd.aws/crowd-html-elements.js"></script>
-<link rel="stylesheet" href="https://cdn.plyr.io/3.7.3/plyr.css" />
-<script src="https://cdn.plyr.io/3.7.3/plyr.polyfilled.js"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
-</style>
+<!DOCTYPE html>
+<html>
 
-<script src="https://code.jquery.com/jquery-3.3.1.js" integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60=" crossorigin="anonymous"></script>
+<head>
+  <script src="https://assets.crowd.aws/crowd-html-elements.js"></script>
+  <link rel="stylesheet" href="https://cdn.plyr.io/3.7.3/plyr.css" />
+  <script src="https://cdn.plyr.io/3.7.3/plyr.polyfilled.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+  </style>
 
-<style>
-  :root {
-  --left-bg: rgb(200, 162, 200, 0.5);
-  --right-bg: rgb(200, 243, 205);
-  }
-  .parent {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-template-rows: auto 1fr auto 1fr auto 1fr;
-  grid-column-gap: 0px;
-  grid-row-gap: 0px;
-  grid-auto-rows: fit-content(1em);
-  }
-  .container {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  grid-template-rows: auto 1fr 1fr 1fr 1fr;
-  gap: 0px 0px;
-  grid-auto-flow: row;
-  grid-template-areas:
-  "A B C"
-  "A0 B0 C0"
-  "A1 B1 C1"
-  "A2 B2 C2"
-  "A3 B3 C3";
-  }
-  .container2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto 1fr 1fr 1fr 1fr;
-  gap: 0px 0px;
-  grid-auto-flow: row;
-  grid-template-areas:
-  "A B"
-  "A0 B0"
-  "A1 B1"
-  "A2 B2"
-  "A3 B3";
-  }
-  .containerA {
-  display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: auto 1fr 1fr 1fr 1fr;
-  gap: 0px 0px;
-  grid-auto-flow: row;
-  grid-template-areas:
-  "A"
-  "A0"
-  "A1"
-  "A2"
-  "A3";
-  }
-  .containerB {
-  display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: auto 1fr 1fr 1fr 1fr;
-  gap: 0px 0px;
-  grid-auto-flow: row;
-  grid-template-areas:
-  "B"
-  "B0"
-  "B1"
-  "B2"
-  "B3";
-  }
-  .A {
-  grid-area: A;
-  }
-  .B {
-  grid-area: B;
-  }
-  .A0 {
-  grid-area: A0;
-  }
-  .A1 {
-  grid-area: A1;
-  }
-  .A2 {
-  grid-area: A2;
-  }
-  .A3 {
-  grid-area: A3;
-  }
-  .B0 {
-  grid-area: B0;
-  }
-  .B1 {
-  grid-area: B1;
-  }
-  .B2 {
-  grid-area: B2;
-  }
-  .B3 {
-  grid-area: B3;
-  }
-  .wrapper {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  padding: 1vmin;
-  }
-  .grid-item {
-  padding: 1vmin;
-  margin: 0;
-  font-size: 10px;
-  text-align: center;
-  display: block;
-  min-width: 0;
-  position:relative;
-  }
-  .section-title {
-  display: flex;
-  justify-content: center;
-  text-align: center;
-  }
-  .grid-image {
-  height: auto;
-  width: 70%;
-  border-radius: 3%;
-  }
-  .row-channel {
-  max-height: 20vh;
-  max-width: 100%;
-  padding: 1vmin;
-  }
-  .grid-text {
-  font-size: 1vmax;
-  line-height: 140%;
-  font-family: "Roboto", "Arial", sans-serif;
-  }
-  .channel-name {
-  font-size: 3vmin;
-  margin: 0;
-  }
-  .div-grid {
-  max-width: min(100%, 30vmin);
-  max-height: min(100%, 30vmin);
-  }
-  .split {
-  height: 100%;
-  position: absolute;
-  overflow-x: hidden;
-  }
-  .left {
-  left: 0;
-  width: 40%;
-  background: var(--left-bg);
-  }
-  .middle {
-  left: 40%;
-  width: 20%;
-  background: #f5f5f5;
-  }
-  .right {
-  right: 0;
-  width: 40%;
-  background: var(--right-bg);
-  }
-  kbd {
-  display: inline-block;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  padding: 0.1em 0.5em;
-  margin: 0 0.2em;
-  box-shadow: 0 1px 0px rgba(0, 0, 0, 0.2), 0 0 0 2px #fff inset;
-  background-color: #f7f7f7;
-  }
-  a,
-  u {
-  text-decoration: none;
-  color: black;
-  font-weight: 500;
-  }
-  a:link {
-  color: none;
-  }
-  a:visited {
-  color: purple;
-  }
-  a:hover {
-  font-weight: 700;
-  }
-  a:focus {
-  font-weight: 700;
-  }
-  a:active {
-  font-weight: 700;
-  }
-  .fully-centered {
-  position: absolute;
-  width: 70%;
-  left: 50%;
-  -webkit-transform: translate(-50%, 0%);
-  transform: translate(-50%, 0%);
-  }
-</style>
-<style>
-  .switch {
-  position: relative;
-  display: inline-block;
-  width: 15vw;
-  height: 34px;
-  }
-  .switch input {
-  display: none;
-  }
-  .slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: var(--left-bg);
-  -webkit-transition: .4s;
-  transition: .4s;
-  }
-  .slider:before {
-  position: absolute;
-  content: "";
-  height: 26px;
-  width: 26px;
-  left: 4px;
-  bottom: 4px;
-  background-color: white;
-  -webkit-transition: .4s;
-  transition: .4s;
-  }
-  input:checked+.slider {
-  background-color: var(--right-bg);
-  }
-  input:focus+.slider {
-  box-shadow: 0 0 1px #2196F3;
-  }
-  input:checked+.slider:before {
-  -webkit-transform: translateX(calc(15vw - 34px));
-  -ms-transform: translateX(calc(15vw - 34px));
-  transform: translateX(calc(15vw - 34px));
-  }
-  /*------ ADDED CSS ---------*/
-  .on {
-  display: none;
-  }
-  .on,
-  .off {
-  color: white;
-  position: absolute;
-  transform: translate(-50%, -50%);
-  top: 50%;
-  left: 50%;
-  font-size: 4vmin;
-  font-family: Roboto, sans-serif;
-  }
-  input:checked+.slider .on {
-  display: block;
-  }
-  input:checked+.slider .off {
-  display: none;
-  }
-  /*--------- END --------*/
-  /* Rounded sliders */
-  .slider.round {
-  border-radius: 34px;
-  }
-  .slider.round:before {
-  border-radius: 50%;
-  }
-  .radio-label {
-  width: 100%;
-  margin-bottom: 1em;
-  text-align: center;
-  }
-  .radio-pillbox {
-  height: 2.5em;
-  width: 100%;
-  font-size: 1em;
-  border: 0;
-  border-radius: 75px;
-  overflow: hidden;
-  box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.16), 0 2px 10px 0 rgba(0, 0, 0, 0.12);
-  }
-  .radio-pillbox radiogroup {
-  height: 100%;
-  width: 100%;
-  display: flex;
-  }
-  .radio-pillbox radiogroup div {
-  width: 100%;
-  position: relative;
-  }
-  .radio-pillbox radiogroup div input {
-  -webkit-appearance: inherit;
-  width: 100%;
-  height: 100%;
-  transition: background 300ms ease-out;
-  margin: 0;
-  outline: 0;
-  border-left: 1px solid rgba(0, 0, 0, 0.05);
-  }
-  .radio-pillbox radiogroup div input:checked {
-  color: #5f6982;
-  border: none;
-  box-shadow: inset 0 10px 50px rgba(25, 25, 25, 0.1);
-  }
-  .radio-pillbox radiogroup .first:checked {
-  background: var(--left-bg)
-  }
-  .radio-pillbox radiogroup .last:checked {
-  background: var(--right-bg)
-  }
-  .radio-pillbox radiogroup div label {
-  position: absolute;
-  top: 50%; /* top plus line-height centers text */
-  line-height: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  text-align: center;
-  }
-  .radio-pillbox input:focus { outline: 0; }
-  .question-box {
-  width: 100%;
-  }
-  .political-0:after {
-  content: 'is the least political';
-  }
-  .political-1:after {
-  content: 'is the most political';
-  }
-  .partisan-0:after {
-  content: 'a more left-wing audience';
-  }
-  .partisan-1:after {
-  content: 'a more right-wing audience';
-  }
-  .affluent-0:after {
-  content: 'a less affluent audience';
-  }
-  .affluent-1:after {
-  content: 'a more affluent audience';
-  }
-  .age-0:after {
-  content: 'a younger audience';
-  }
-  .age-1:after {
-  content: 'an older audience';
-  }
-  .catering-1:after {
-  content: 'appeals to';
-  }
-</style>
-<!-- https://github.com/imkevinkuo/misc-tools/blob/master/validateCrowdForm.js -->
-<script>
-  function clearRadioGroup(radioGroup){
-      const left = $(radioGroup).find('.first')[0]
-      const right = $(radioGroup).find('.last')[0]
-      
-      left.checked = false
-      right.checked = false
-  }
-  
-  function uncheckRadio(){
-       keys = ['partisan']
-      
-      let all_inputs = {}
-      
-      for (key of keys){
-          let radio_g = document.getElementById('radio-{key}'.formatUnicorn({key:key}))
-          clearRadioGroup(radio_g)
-      }
-  }
-  
-  function toggleRadioGroup(radioGroup){
-      
-      const left = $(radioGroup).find('.first')[0]
-      const right = $(radioGroup).find('.last')[0]
-      
-      if(left.checked || right.checked){
-          if(left.checked){
-            right.checked = true
-          }
-          else{
-            left.checked = true
-          }
-      }else{
-          left.checked = true
-      }
-      
-  }
-  
-    function getRadioGroup(radioGroup){
-      
-      const left = $(radioGroup).find('.first')[0]
-      const right = $(radioGroup).find('.last')[0]
-      
-      return left.checked ? 'A': (right.checked ? 'B' : 'None')
-      
-  }
-  
-  function validateForm() {
-    var valid = true;
-    var radioGroups = document.querySelectorAll("crowd-radio-group");
-    for (var i = 0; i < radioGroups.length; i++) {
-      var validGroup = false;
-      var radioButtons = radioGroups[i].children;
-      for (var j = 0; j < radioButtons.length; j++) {
-        validGroup = validGroup || radioButtons[j].checked;
-      }
-      valid = valid && validGroup;
-    }
-    return valid;
-  }
-  
-  function invertAB(s){
-    if(s.includes('A')){
-      return s.replace('A','B')
-    }
-    return s.replace('B','A')
-  }
-  function updatePage(arr) {
-  
-    reverseChannels = Math.random() < 0.5;
-    //reverseChannels = true
-    
-    // reset image to default
-    $('.grid-image').css('display', '')
-    $('.video-embed').css('display', 'none')
-  
-    // reset scroll
-    $('.split.left')[0].scrollTop = 0 
-    $('.split.right')[0].scrollTop = 0 
-  
-    // pause all vids
-    try{
-        for (const [vidKey, vidValue] of Object.entries(playerDict)){
-            vidValue.pause()
-        }
-      }
-      catch (error){
-        console.log(error)
-    }
-    
-  
-    for (const [key, value] of Object.entries(arr)) {
-      let revkey = reverseChannels? invertAB(key): key
-      let elem = document.getElementById(revkey)
-      
-  
-      if (key.includes('_channelId')) {
-        elem.href = 'https://youtube.com/channel/' + value
-      } else if (key.includes('_channelTitle')) {
-        const ident = key.split('_')[0]
-        elem.innerHTML = ident + ' : ' + value
-      } else if (key.includes('_videoId_')) {
-          
-        //setSource(revkey, value)
-  
-      } else if (key.includes('_thumbnail_')) {
-        elem.src = value
-  
-      } else if (key.includes('_title_')) {
-        elem.innerHTML = value
-      } else {
-        alert('Issue on batch, please contact requester')
-      }
-    }
-  }
-      
-    function blurAll(){
-     var tmp = document.createElement("input");
-     document.body.appendChild(tmp);
-     tmp.focus();
-     document.body.removeChild(tmp);
-    }
-  
-  var parsed = ""
-  var currentIter = 0
-  const results = []
-  var workerParams = {}
-  var reverseChannels = false
-  
-  function validateInput(){
-      keys = ['partisan']
-      
-      let all_inputs = {}
-      
-      for (key of keys){
-          let radio_g = document.getElementById('radio-{key}'.formatUnicorn({key:key}))
-          
-          let check = getRadioGroup(radio_g)
-          
-          if(check == 'None'){
-              return false
-          }
-          
-          let workerVal = workerParams[key]
-          
-          let tmp_val = workerVal == 1 ? invertAB(check): check
-          let final_val = reverseChannels ? invertAB(tmp_val): tmp_val
-          all_inputs[key] = final_val
-      }
-      
-    return all_inputs
-  }
-  
-  function submitButton() {
-    
-    let vals = validateInput()
-    
-    if(!vals){
-        alert('Please select a value for each criterion')
-        return;
-    }
-    results.push(JSON.stringify(vals))
-    uncheckRadio()
-    
-    if (currentIter != parseInt("${length}")) {
-        
-      document.getElementById('current-step').innerHTML = currentIter + 1
-      updatePage(parsed[currentIter++])
-      
-      
-    } else {
-        
-      const inputForm = document.getElementById('crowd-input-final')
-      const resStr = results.join()
-      inputForm.innerHTML = JSON.stringify(resStr)
-      inputForm.value = JSON.stringify(resStr)
-      document.getElementById('submitter-button').click()
-    }
-    
-    blurAll()
-  }
-  
-  /**
-   * Returns a hash code from a string
-   * @param  {String} str The string to hash.
-   * @return {Number}    A 32bit integer
-   * @see http://werxltd.com/wp/2010/05/13/javascript-implementation-of-javas-string-hashcode-method/
-   */
-  function hashCode(str) {
-      let hash = 0;
-      for (let i = 0, len = str.length; i < len; i++) {
-          let chr = str.charCodeAt(i);
-          hash = (hash << 5) - hash + chr;
-          hash |= 0; // Convert to 32bit integer
-      }
-      return hash >>> 0;
-  }
-  
-  String.prototype.formatUnicorn = String.prototype.formatUnicorn ||
-    function () {
+  <script>
+    String.prototype.formatUnicorn = String.prototype.formatUnicorn ||
+      function () {
         "use strict";
         var str = this.toString();
         if (arguments.length) {
-            var t = typeof arguments[0];
-            var key;
-            var args = ("string" === t || "number" === t) ?
-                Array.prototype.slice.call(arguments)
-                : arguments[0];
-    
-            for (key in args) {
-                str = str.replace(new RegExp("\\{" + key + "\\}", "gi"), args[key]);
-            }
+          var t = typeof arguments[0];
+          var key;
+          var args = ("string" === t || "number" === t) ?
+            Array.prototype.slice.call(arguments)
+            : arguments[0];
+
+          for (key in args) {
+            str = str.replace(new RegExp("\\{" + key + "\\}", "gi"), args[key]);
+          }
         }
-    
+
         return str;
-    };
-  
-  function getWorkerParams(){
+      };
+
+    function clearRadioGroup(radioGroup) {
+      const left = $(radioGroup).find('.first')[0]
+      const right = $(radioGroup).find('.last')[0]
+
+      left.checked = false
+      right.checked = false
+    }
+
+    function uncheckRadio() {
+      keys = ['${dim}']
+
+      let all_inputs = {}
+
+      for (key of keys) {
+        let radio_g = document.getElementById('radio-{key}'.formatUnicorn({ key: key }))
+        clearRadioGroup(radio_g)
+      }
+    }
+
+    function toggleRadioGroup(radioGroup) {
+
+      const left = $(radioGroup).find('.first')[0]
+      const right = $(radioGroup).find('.last')[0]
+
+      if (left.checked || right.checked) {
+        if (left.checked) {
+          right.checked = true
+        }
+        else {
+          left.checked = true
+        }
+      } else {
+        left.checked = true
+      }
+
+    }
+
+    function getRadioGroup(radioGroup) {
+
+      const left = $(radioGroup).find('.first')[0]
+      const right = $(radioGroup).find('.last')[0]
+
+      return left.checked ? 'A' : (right.checked ? 'B' : 'None')
+
+    }
+
+    function validateForm() {
+      var valid = true;
+      var radioGroups = document.querySelectorAll("crowd-radio-group");
+      for (var i = 0; i < radioGroups.length; i++) {
+        var validGroup = false;
+        var radioButtons = radioGroups[i].children;
+        for (var j = 0; j < radioButtons.length; j++) {
+          validGroup = validGroup || radioButtons[j].checked;
+        }
+        valid = valid && validGroup;
+      }
+      return valid;
+    }
+
+    function invertAB(s) {
+      if (s.includes('A')) {
+        return s.replace('A', 'B')
+      }
+      return s.replace('B', 'A')
+    }
+
+    function updatePage(arr) {
+
+      reverseChannels = Math.random() < 0.5;
+      //reverseChannels = true
+
+      // reset image to default
+      $('.grid-image').css('display', '')
+      $('.video-embed').css('display', 'none')
+
+      // reset scroll
+      $('.split.left')[0].scrollTop = 0
+      $('.split.right')[0].scrollTop = 0
+
+      // pause all vids
+      try {
+        for (const [vidKey, vidValue] of Object.entries(playerDict)) {
+          vidValue.pause()
+        }
+      }
+      catch (error) {
+        console.log(error)
+      }
+
+
+      if (arr !== undefined) {
+
+        for (const [key, value] of Object.entries(arr)) {
+          let revkey = reverseChannels ? invertAB(key) : key
+          let elem = document.getElementById(revkey)
+
+
+          if (key.includes('_channelId')) {
+            elem.href = 'https://youtube.com/channel/' + value
+          } else if (key.includes('_channelTitle')) {
+            const ident = key.split('_')[0]
+            elem.innerHTML = ident + ' : ' + value
+          } else if (key.includes('_videoId_')) {
+
+            //setSource(revkey, value)
+
+          } else if (key.includes('_thumbnail_')) {
+            elem.src = value
+
+          } else if (key.includes('_title_')) {
+            elem.innerHTML = value
+          } else {
+            alert('Issue on batch, please contact requester')
+          }
+        }
+      }
+
+    }
+
+    function blurAll() {
+      var tmp = document.createElement("input");
+      document.body.appendChild(tmp);
+      tmp.focus();
+      document.body.removeChild(tmp);
+    }
+
+    var parsed = ""
+    var currentIter = 0
+    const results = []
+    var workerParams = {}
+    var reverseChannels = false
+
+    function validateInput() {
+      keys = ['${dim}']
+
+      let all_inputs = {}
+
+      for (key of keys) {
+        let radio_g = document.getElementById('radio-{key}'.formatUnicorn({ key: key }))
+
+        let check = getRadioGroup(radio_g)
+
+        if (check == 'None') {
+          return false
+        }
+
+        let workerVal = workerParams[key]
+
+        let tmp_val = workerVal == 1 ? invertAB(check) : check
+        let final_val = reverseChannels ? invertAB(tmp_val) : tmp_val
+        all_inputs[key] = final_val
+      }
+
+      return all_inputs
+    }
+
+    function submitButton() {
+
+      $('#submit-button').attr("disabled", true);
+
+      let vals = validateInput()
+      uncheckRadio()
+
+      if (!vals) {
+        alert('Please select a value for each criterion')
+        $('#submit-button').attr("disabled", false);
+        blurAll()
+        return;
+      }
+      results.push(JSON.stringify(vals))
+
+
+      if (currentIter < parseInt("${length}")) {
+
+        document.getElementById('current-step').innerHTML = currentIter + 1
+        updatePage(parsed[currentIter++])
+
+      } else if (currentIter == parseInt("${length}")) {
+
+        const inputForm = document.getElementById('crowd-input-final')
+
+        const parsedLen = parseInt("${length}")
+        if (results.length != parsedLen) {
+          alert('An error occurred ({reslen}/{totlen}), please retry with no extensions and scripts and otherwise contact us and walk us through your steps so we can fix it.'.formatUnicorn({ reslen: results.length, totlen: parsedLen }))
+          $('#submit-button').attr("disabled", false);
+          blurAll()
+          return
+        }
+
+        const resStr = results.join()
+        inputForm.innerHTML = JSON.stringify(resStr)
+        inputForm.value = JSON.stringify(resStr)
+        document.getElementById('submitter-button').click()
+
+      } else {
+
+        alert('An error occurred (currentIter = {currIt}), please retry with no extensions and scripts and otherwise contact us and walk us through your steps so we can fix it.'.formatUnicorn({ currIt: currentIter }))
+      }
+
+      blurAll()
+
+      $('#submit-button').attr("disabled", false);
+    }
+
+    /**
+     * Returns a hash code from a string
+     * @param  {String} str The string to hash.
+     * @return {Number}    A 32bit integer
+     * @see http://werxltd.com/wp/2010/05/13/javascript-implementation-of-javas-string-hashcode-method/
+     */
+    function hashCode(str) {
+      let hash = 0;
+      for (let i = 0, len = str.length; i < len; i++) {
+        let chr = str.charCodeAt(i);
+        hash = (hash << 5) - hash + chr;
+        hash |= 0; // Convert to 32bit integer
+      }
+      return hash >>> 0;
+    }
+
+
+
+    function getWorkerParams() {
       let workerId = ""
-      try{
+      try {
         const queryString = window.location.search;
         const urlParams = new URLSearchParams(queryString);
         workerId = urlParams.get('workerId')
       }
-      catch (error){
+      catch (error) {
         console.log(error)
       }
-      
+
       workerId = workerId || "ThisIsAPreDefinedWorkerID"
-  
+
       console.log(workerId)
       const hashed = hashCode(workerId)
-      
+
       choices = [[0, 1],
-           [0, 1],
-           [0, 1],
-           [0, 1],
-           [0, 1, 2, 3]]
-           
-      keys = ['political', 'partisan', 'affluent', 'age']
-      
-      choices_str = [['Least political', 'Most political'],
-           ['More Left-Wing', 'More right-wing'],
-           ['Less Affluent', 'More Affluent'],
-           ['Younger Audience', 'Older Audience']]
-           
+      [0, 1],
+      [0, 1],
+      [0, 1],
+      [0, 1]]
+
+      keys = ['political', 'partisan', 'affluent', 'age', 'gender']
+
+
       let it = hashed
-      
+
       const choice_made = {}
       for (var i = 0; i < choices.length; i++) {
         choice_arr = choices[i]
         key = keys[i]
-        
+
         nchoices = choice_arr.length
         choice_made[key] = choice_arr[it % nchoices]
-        
+
         int_repr = Math.ceil(Math.log2(nchoices))
         it = it >>> int_repr
       }
-      
+
       return choice_made
-  }
-  
-  
-  function hideOverlay() {
-      
-    $(document).ready(function() {
-        
-        console.log(parsed)
-      try{
-        const overlaybg = document.getElementById('fixed-background-overlay')
-        const overlay = document.getElementById('text-overlay')
-        overlaybg.remove()
-        overlay.remove()
-        
-        }catch(err){
+    }
+
+
+    function hideOverlay() {
+
+      $(document).ready(function () {
+
+        try {
+          const overlaybg = document.getElementById('fixed-background-overlay')
+          const overlay = document.getElementById('text-overlay')
+          overlaybg.remove()
+          overlay.remove()
+
+        } catch (err) {
           console.log(err)
         }
-    });
-  
-    
-    
+      });
+
+
+
+    }
+
+    var playerDict = undefined
+
+    let valid_answers = {
+      '${dim}': false
+    }
+    function handleAnswer(key, answer) {
+
+      //verify if they checked the box first
+      if (!$('#agree_checkbox')[0].checked) {
+        alert('You have to agree to only complete at most 6 HITs to perform this experiment')
+        return
+      }
+
+      true_answer = {
+        'partisan': 'B',
+        'gender': 'B',
+        'age': 'A'
+      }
+      explanation = {
+        'partisan': 'Fox news is more right wing',
+        'age': 'The shins is more old school',
+        'gender': 'Fly with Johnny is more related to men fashion and Nava Rose women fashion',
+
+      }
+
+      let answer_rev = workerParams[key] == 1 ? invertAB(answer) : answer
+
+      let button = document.getElementById('{answer}-button-{key}'.formatUnicorn({ key: key, answer: answer }))
+      if (true_answer[key] == answer_rev) {
+        button.classList.add('valid-answer')
+        button.disabled = true;
+
+        let otherButton = document.getElementById('{otherAnswer}-button-{key}'.formatUnicorn({ key: key, otherAnswer: invertAB(answer) }))
+        valid_answers[key] = true
+
+        if (Object.values(valid_answers).every(f => f)) {
+          hideOverlay()
+        }
+      } else {
+        alert('Are you sure ? ' + explanation[key])
+      }
+
+    }
+
+    let tutorial_videos = {
+      "partisan": {
+        "A": {
+          "channelId": "UCXIJgqnII2ZOINSWNOGFThA",
+          "channelName": "Fox News",
+          "videoTitles": [
+            "Biden doesn't want to know what's happening at the border: Dan Patrick",
+            "Prince Harry is on a 'one-man mission to dismantle the monarchy': Piers Morgan",
+            "Biden accused of lying to Republican lawmaker's face",
+            "Hakeem Jeffries now has a 'huge problem': Gingrich"
+          ],
+          "videoIds": [
+            "yf0jd0PnvsA",
+            "hF17sazaw-o",
+            "4Y6zAskLjLY",
+            "ir5QJRg6ixI"
+          ],
+        },
+        "B": {
+          "channelId": "UCcCUFZrM30X_YEhJty2IgXA",
+          "channelName": "mercyforanimals",
+          "videoTitles": [
+            "Alicia Silverstone has been speaking up for animals since she was a teenager!",
+            "Mercy For Animals 2022 Year in Review",
+            "Meet actor and “animal enthusiast,” Elizabeth Lail",
+            "Meet acclaimed photographer, author, and poet Alexi Lubomirski"
+          ],
+          "videoIds": [
+            "ZC3iFwB02AI",
+            "1amLI3KUgDo",
+            "Co-xMnYJq_E",
+            "uU72tquFglM"
+          ],
+        }
+      },
+      "gender": {
+        "A": {
+          "channelId": "UCTeNpbcaDZWZiCPziLWkOYw",
+          "channelName": "Nava Rose",
+          "videoTitles": [
+            "TOP 5 REASONS You Still Shop Fast Fashion & How To Break Them",
+            "thrifting + stying trending aesthetics ✨ | subversive, dollette, y2k rock, cyberpunk, aecore",
+            "BTS (방탄소년단) ARMY | Bangtan Buds at KTNM 2022",
+            "BATTLE ROYALE | Nava Rose 2022 Concept"
+          ],
+          "videoIds": [
+            "3lkIDtTb4XU",
+            "ndG2p79Aq4o",
+            "UJGaWQKZlK0",
+            "4uzV6oAm3do"
+          ],
+        },
+        "B": {
+          "channelId": "UCiWMV3RA6jpYNGZWTbjFneA",
+          "channelName": "Fly With Johnny Thai",
+          "videoTitles": [
+            "Why You Look BAD In Baggy/Wide Fit Pants (10 MISTAKES)",
+            "How To Be Well Dressed This Spring/Summer (My 10 Essentials)",
+            "Would You Pay $675 For Sunglasses?",
+            "10 Tips To Look MORE EXPENSIVE On A Budget"
+          ],
+          "videoIds": [
+            "0PSD-SFUScM",
+            "8Lb7lqVwMdQ",
+            "o3au1neRUr4",
+            "7oQALBoZSDw"
+          ],
+        }
+      },
+      "age": {
+        "A": {
+          "channelId": "UCkwzba-glIN3D3d_K0kWZmg",
+          "channelName": "QUINTINO",
+          "videoTitles": [
+            "Quintino - Go Hard (Official Music Video)",
+            "Quintino - Switch Back (Official Music Video)",
+            "Quintino - Carnival (Official Music Video)",
+            "Sandro Silva & Quintino - Epic (Original Mix)"
+          ],
+          "videoIds": [
+            "-fxMThzEqlg",
+            "SnI47up0hfA",
+            "NbpiOWqqIZg",
+            "IQKsLOPK_ls"
+          ],
+        },
+        "B": {
+          "channelId": "UCwKTbPQOdBFrkSvGrO-8v3g",
+          "channelName": "theshins",
+          "videoTitles": [
+            "The Shins - New Slang [OFFICIAL VIDEO]",
+            "The Shins - Simple Song (Video)",
+            "The Shins - Phantom Limb [OFFICIAL VIDEO]",
+            "The Shins - The Rifle's Spiral (Video)"
+          ],
+          "videoIds": [
+            "zYwCmcB0XMw",
+            "RoLTPcD1S4Q",
+            "OkITsv3Nk6M",
+            "jyqWjl7GkCE"
+          ],
+        }
+      }
+    }
+
+    async function setSource(key, value) {
+      let player = playerDict[key]
+      player.source = {
+        type: 'video',
+        sources: [
+          {
+            src: value,
+            provider: 'youtube',
+          },
+        ],
+      };
+
+
+    }
+
+    function load_video(thumbnail_id, video_elem_id) {
+      let revkey = reverseChannels ? invertAB(video_elem_id) : video_elem_id
+      const video_id = parsed[currentIter - 1][revkey]
+
+      setSource(video_elem_id, video_id)
+
+      let player = playerDict[video_elem_id]
+      player.on('ready', (event) => {
+        player.play()
+      });
+
+      document.getElementById(thumbnail_id).style.display = 'none'
+      document.getElementById(video_elem_id).style.display = 'block'
+
+    }
+  </script>
+  <script src="https://code.jquery.com/jquery-3.3.1.js" integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60="
+    crossorigin="anonymous"></script>
+
+  <title>YouTube dimension experiment</title>
+</head>
+
+<style>
+  :root {
+    --left-bg: rgb(200, 162, 200, 0.5);
+    --right-bg: rgb(200, 243, 205);
   }
+
+  .parent {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: auto 1fr auto 1fr auto 1fr;
+    grid-column-gap: 0px;
+    grid-row-gap: 0px;
+    grid-auto-rows: fit-content(1em);
+  }
+
+  .container {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: auto 1fr 1fr 1fr 1fr;
+    gap: 0px 0px;
+    grid-auto-flow: row;
+    grid-template-areas:
+      "A B C"
+      "A0 B0 C0"
+      "A1 B1 C1"
+      "A2 B2 C2"
+      "A3 B3 C3";
+  }
+
+  .container2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto 1fr 1fr 1fr 1fr;
+    gap: 0px 0px;
+    grid-auto-flow: row;
+    grid-template-areas:
+      "A B"
+      "A0 B0"
+      "A1 B1"
+      "A2 B2"
+      "A3 B3";
+  }
+
+  .containerA {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr 1fr 1fr 1fr;
+    gap: 0px 0px;
+    grid-auto-flow: row;
+    grid-template-areas:
+      "A"
+      "A0"
+      "A1"
+      "A2"
+      "A3";
+  }
+
+  .containerB {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr 1fr 1fr 1fr;
+    gap: 0px 0px;
+    grid-auto-flow: row;
+    grid-template-areas:
+      "B"
+      "B0"
+      "B1"
+      "B2"
+      "B3";
+  }
+
+  .A {
+    grid-area: A;
+  }
+
+  .B {
+    grid-area: B;
+  }
+
+  .A0 {
+    grid-area: A0;
+  }
+
+  .A1 {
+    grid-area: A1;
+  }
+
+  .A2 {
+    grid-area: A2;
+  }
+
+  .A3 {
+    grid-area: A3;
+  }
+
+  .B0 {
+    grid-area: B0;
+  }
+
+  .B1 {
+    grid-area: B1;
+  }
+
+  .B2 {
+    grid-area: B2;
+  }
+
+  .B3 {
+    grid-area: B3;
+  }
+
+  .wrapper {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    padding: 1vmin;
+  }
+
+  .grid-item {
+    padding: 1vmin;
+    margin: 0;
+    font-size: 10px;
+    text-align: center;
+    display: block;
+    min-width: 0;
+    position: relative;
+  }
+
+  .section-title {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .grid-image {
+    height: auto;
+    width: 70%;
+    border-radius: 3%;
+  }
+
+  .row-channel {
+    max-height: 20vh;
+    max-width: 100%;
+    padding: 1vmin;
+  }
+
+  .grid-text {
+    font-size: 1vmax;
+    line-height: 140%;
+    font-family: "Roboto", "Arial", sans-serif;
+  }
+
+  .channel-name {
+    font-size: 3vmin;
+    margin: 0;
+  }
+
+  .div-grid {
+    max-width: min(100%, 30vmin);
+    max-height: min(100%, 30vmin);
+  }
+
+  .split {
+    height: 100%;
+    position: absolute;
+    overflow-x: hidden;
+  }
+
+  .left {
+    left: 0;
+    width: 40%;
+    background: var(--left-bg);
+  }
+
+  .middle {
+    left: 40%;
+    width: 20%;
+    background: #f5f5f5;
+  }
+
+  .right {
+    right: 0;
+    width: 40%;
+    background: var(--right-bg);
+  }
+
+  kbd {
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 0.1em 0.5em;
+    margin: 0 0.2em;
+    box-shadow: 0 1px 0px rgba(0, 0, 0, 0.2), 0 0 0 2px #fff inset;
+    background-color: #f7f7f7;
+  }
+
+  a,
+  u {
+    text-decoration: none;
+    color: black;
+    font-weight: 500;
+  }
+
+  a:link {
+    color: none;
+  }
+
+  a:visited {
+    color: purple;
+  }
+
+  a:hover {
+    font-weight: 700;
+  }
+
+  a:focus {
+    font-weight: 700;
+  }
+
+  a:active {
+    font-weight: 700;
+  }
+
+  .fully-centered {
+    position: absolute;
+    width: 70%;
+    left: 50%;
+    -webkit-transform: translate(-50%, 0%);
+    transform: translate(-50%, 0%);
+  }
+</style>
+<style>
+  .switch {
+    position: relative;
+    display: inline-block;
+    width: 15vw;
+    height: 34px;
+  }
+
+  .switch input {
+    display: none;
+  }
+
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--left-bg);
+    -webkit-transition: .4s;
+    transition: .4s;
+  }
+
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    -webkit-transition: .4s;
+    transition: .4s;
+  }
+
+  input:checked+.slider {
+    background-color: var(--right-bg);
+  }
+
+  input:focus+.slider {
+    box-shadow: 0 0 1px #2196F3;
+  }
+
+  input:checked+.slider:before {
+    -webkit-transform: translateX(calc(15vw - 34px));
+    -ms-transform: translateX(calc(15vw - 34px));
+    transform: translateX(calc(15vw - 34px));
+  }
+
+  /*------ ADDED CSS ---------*/
+  .on {
+    display: none;
+  }
+
+  .on,
+  .off {
+    color: white;
+    position: absolute;
+    transform: translate(-50%, -50%);
+    top: 50%;
+    left: 50%;
+    font-size: 4vmin;
+    font-family: Roboto, sans-serif;
+  }
+
+  input:checked+.slider .on {
+    display: block;
+  }
+
+  input:checked+.slider .off {
+    display: none;
+  }
+
+  /*--------- END --------*/
+  /* Rounded sliders */
+  .slider.round {
+    border-radius: 34px;
+  }
+
+  .slider.round:before {
+    border-radius: 50%;
+  }
+
+  .radio-label {
+    width: 100%;
+    margin-bottom: 1em;
+    text-align: center;
+  }
+
+  .radio-pillbox {
+    height: 2.5em;
+    width: 100%;
+    font-size: 1em;
+    border: 0;
+    border-radius: 75px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.16), 0 2px 10px 0 rgba(0, 0, 0, 0.12);
+  }
+
+  .radio-pillbox radiogroup {
+    height: 100%;
+    width: 100%;
+    display: flex;
+  }
+
+  .radio-pillbox radiogroup div {
+    width: 100%;
+    position: relative;
+  }
+
+  .radio-pillbox radiogroup div input {
+    -webkit-appearance: inherit;
+    width: 100%;
+    height: 100%;
+    transition: background 300ms ease-out;
+    margin: 0;
+    outline: 0;
+    border-left: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  .radio-pillbox radiogroup div input:checked {
+    color: #5f6982;
+    border: none;
+    box-shadow: inset 0 10px 50px rgba(25, 25, 25, 0.1);
+  }
+
+  .radio-pillbox radiogroup .first:checked {
+    background: var(--left-bg)
+  }
+
+  .radio-pillbox radiogroup .last:checked {
+    background: var(--right-bg)
+  }
+
+  .radio-pillbox radiogroup div label {
+    position: absolute;
+    top: 50%;
+    /* top plus line-height centers text */
+    line-height: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+  }
+
+  .radio-pillbox input:focus {
+    outline: 0;
+  }
+
+  .question-box {
+    width: 100%;
+  }
+
+  .political-0:after {
+    content: 'is the least political';
+  }
+
+  .political-1:after {
+    content: 'is the most political';
+  }
+
+  .partisan-0:after {
+    content: 'a more left-leaning audience';
+  }
+
+  .partisan-1:after {
+    content: 'a more right-leaning audience';
+  }
+
+  .affluent-0:after {
+    content: 'a less affluent audience';
+  }
+
+  .affluent-1:after {
+    content: 'a more affluent audience';
+  }
+
+  .age-0:after {
+    content: 'a younger audience';
+  }
+
+  .age-1:after {
+    content: 'an older audience';
+  }
+
+  .gender-0:after {
+    content: 'a more masculine audience'
+  }
+
+  .gender-1:after {
+    content: 'a more feminine audience';
+  }
+
+  .catering-1:after {
+    content: 'appeals to';
+  }
+</style>
+<!-- https://github.com/imkevinkuo/misc-tools/blob/master/validateCrowdForm.js -->
+<script>
+
+
+
+
+
+
+
+
 </script>
-<div id="fixed-background-overlay" style="position:fixed;z-index:3;top:0;width:100%;height:100vh;background:white;bottom:0"></div>
+
+<div id="fixed-background-overlay"
+  style="position:fixed;z-index:3;top:0;width:100%;height:100vh;background:white;bottom:0"></div>
 <div id="text-overlay" style="position:absolute;z-index:5;top:0;width:100%;height:100vh">
   <div class="fully-centered">
     <div>
       <p>
-        <b>Goal : </b>
-      <p>Throughout this experiment, you will be presented with pairs of youtube channels. You will then have to answer one question : Which channel <span class="catering-1"></span> <span class="partisan-choice"></span> ?</p>
-      <p>You have to answer based on the information at your disposal: The name of the channel, and the thumbnail and video titles of their most recent videos.
-        You can click on the thumbnails to view the video if you have a doubt, but most of the time it should not be necessary (each task should take at most 20 seconds).
+      <b>Goal : </b>
+      <p>Throughout this experiment, you will be presented with pairs of youtube channels. You will then have to answer
+        one question : Which channel <span class="catering-1"></span> <span class="${dim}-choice"></span> ?</p>
+      <p>You have to answer based on the information at your disposal: The name of the channel, and the thumbnail and
+        video titles of their most recent videos.
+        You can click on the thumbnails to view the video if you have a doubt, but most of the time it should not be
+        necessary (each task should take at most 20 seconds).
       </p>
-      <p>Sometimes, none of the channels are truly partisan. In that case, simply select the channel that best fits.</p>
-      <p>By <a href="https://www.vocabulary.com/dictionary/left%20wing" target="_blank">left-wing</a>, we mean the group of voters and politicians who lean toward liberal, progressive, socialist, or radical political beliefs.
-        Contrastively, by <a href="https://www.dictionary.com/e/leftright/" target="_blank">right-wing</a>, we mean people or groups that have more conservative views. That generally means they are disposed to preserving existing conditions and institutions. Or, they want to restore traditional ones and limit change.
       </p>
+
+      <div id="partisan-text" style="display:none">
+        <p>Sometimes, none of the channels are truly partisan. In that case, simply select the channel that best fits.
+        </p>
+        <p>By <a href="https://www.vocabulary.com/dictionary/left%20wing" target="_blank">left-wing</a>, we mean the
+          group of voters and politicians who lean toward liberal, progressive, socialist, or radical political beliefs.
+          Contrastively, by <a href="https://www.dictionary.com/e/leftright/" target="_blank">right-wing</a>, we mean
+          people or groups that have more conservative views. That generally means they are disposed to preserving
+          existing conditions and institutions. Or, they want to restore traditional ones and limit change.
+        </p>
+      </div>
+
+      <p>The identifier of the current experiment is <b>V5</b>. There will be other similar experiments labeled V6, V7
+        etc..
+      <p>You are only allowed to answer to 6 HITs for this experiment (identifier V5). This means that you can perform 6
+        HITs of this V5 experiment, one HIT of the V6 experiment, etc..</p>
+      <input type="checkbox" id="agree_checkbox" name="AgreeSingle" value="AgreeSingle">
+      <label for="agree_checkbox"> <b> I agree to complete at most 6 HITs for this experiment (identifier V5), and to
+          have my assignments refused if I don't. </b></label><br>
       </p>
+
+      <p>If you have any extension or script that might affect MTurk, we recommend disabling them (or running in incognito mode so they are automatically disabled) as they may introduce errors that make you unable to complete the HIT.
+      </p>
+
+
+
+
       <p>
         <b>Shortcuts : </b>
       </p>
-      <p>
       <p>
         <kbd>1</kbd> : Select channel A
       </p>
@@ -681,149 +1004,123 @@
         <div class="container2" style="height:45vh;overflow:scroll">
           <div class="A">
             <div class="section-title">
-              <a href="https://youtube.com/channel/UCXIJgqnII2ZOINSWNOGFThA" target="_blank">
-              <span class="channel-name">A : Fox News</span>
+              <a id="channel-name-tutorial-url-A" href="https://youtube.com/channel/" target="_blank">
+                <span id="channel-tutorial-name-A" class="channel-name">A : Fox News</span>
               </a>
             </div>
           </div>
           <div class="B">
             <div class="section-title">
-              <a href="https://youtube.com/channel/UCcCUFZrM30X_YEhJty2IgXA" target="_blank">
-              <span class="channel-name">B : mercyforanimals</span>
+              <a id="channel-name-tutorial-url-B" href="https://youtube.com/channel/" target="_blank">
+                <span id="channel-tutorial-name-B" class="channel-name">B : mercyforanimals</span>
               </a>
             </div>
           </div>
           <div class="A0">
-            <a href="https://youtube.com/watch?v=yf0jd0PnvsA" target="_blank">
+            <a id="A0-url" href="https://youtube.com/watch?v=" target="_blank">
               <figure class="grid-item">
-                <img class="grid-image" src="https://i.ytimg.com/vi/yf0jd0PnvsA/hqdefault.jpg?sqp=-oaymwEcCNACELwBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLCUTvFQZjJ3-t6LOz0SZescmqWnEA">
-                <figcaption class="grid-text">Biden doesn't want to know what's happening at the border: Dan Patrick</figcaption>
+                <img width="100%" height="100%" id="A0-img" class="grid-image">
+                <figcaption id="A0-caption" class="grid-text"></figcaption>
               </figure>
             </a>
           </div>
           <div class="A1">
-            <a href="https://youtube.com/watch?v=hF17sazaw-o" target="_blank">
+            <a id="A1-url" href="https://youtube.com/watch?v=" target="_blank">
               <figure class="grid-item">
-                <img class="grid-image" src="https://i.ytimg.com/vi/hF17sazaw-o/hqdefault.jpg?sqp=-oaymwEcCNACELwBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLAyG5Go0PoUWPC5ZSZhjGbnhjuc5w">
-                <figcaption class="grid-text">Prince Harry is on a 'one-man mission to dismantle the monarchy': Piers Morgan</figcaption>
+                <img width="100%" height="100%" id="A1-img" class="grid-image">
+                <figcaption id="A1-caption" class="grid-text"></figcaption>
               </figure>
             </a>
           </div>
           <div class="A2">
-            <a href="https://youtube.com/watch?v=4Y6zAskLjLY" target="_blank">
+            <a id="A2-url" href="https://youtube.com/watch?v=" target="_blank">
               <figure class="grid-item">
-                <img class="grid-image" src="https://i.ytimg.com/vi/4Y6zAskLjLY/hqdefault.jpg?sqp=-oaymwEcCNACELwBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLClUH8CCRlWo6hrYtswwUJMyZLjUw">
-                <figcaption class="grid-text">Biden accused of lying to Republican lawmaker's face</figcaption>
+                <img width="100%" height="100%" id="A2-img" class="grid-image">
+                <figcaption id="A2-caption" class="grid-text"></figcaption>
               </figure>
             </a>
           </div>
           <div class="A3">
-            <a href="https://youtube.com/watch?v=ir5QJRg6ixI" target="_blank">
+            <a id="A3-url" href="https://youtube.com/watch?v=" target="_blank">
               <figure class="grid-item">
-                <img class="grid-image" src="https://i.ytimg.com/vi/ir5QJRg6ixI/hqdefault.jpg?sqp=-oaymwEcCNACELwBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLBOP1RUwYYRP3jlmO01DDsjPZVX1Q">
-                <figcaption class="grid-text">Hakeem Jeffries now has a 'huge problem': Gingrich</figcaption>
+                <img width="100%" height="100%" id="A3-img" class="grid-image">
+                <figcaption id="A3-caption" class="grid-text"></figcaption>
               </figure>
             </a>
           </div>
           <div class="B0">
-            <a href="https://youtube.com/watch?v=ZC3iFwB02AI" target="_blank">
+            <a id="B0-url" href="https://youtube.com/watch?v=" target="_blank">
               <figure class="grid-item">
-                <img class="grid-image" src="https://i.ytimg.com/vi/ZC3iFwB02AI/hqdefault.jpg?sqp=-oaymwEcCNACELwBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLCt-PesY4uI1MeCGxHkDIoBhiKgxA">
-                <figcaption class="grid-text">Alicia Silverstone has been speaking up for animals since she was a teenager!</figcaption>
+                <img width="100%" height="100%" id="B0-img" class="grid-image">
+                <figcaption id="B0-caption" class="grid-text"></figcaption>
               </figure>
             </a>
           </div>
           <div class="B1">
-            <a href="https://youtube.com/watch?v=1amLI3KUgDo" target="_blank">
+            <a id="B1-url" href="https://youtube.com/watch?v=" target="_blank">
               <figure class="grid-item">
-                <img class="grid-image" src="https://i.ytimg.com/vi/1amLI3KUgDo/hqdefault.jpg?sqp=-oaymwEcCNACELwBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLD8Qmavus6yFxWK7PwBtIRZFc5MWg">
-                <figcaption class="grid-text">Mercy For Animals 2022 Year in Review</figcaption>
+                <img width="100%" height="100%" id="B1-img" class="grid-image">
+                <figcaption id="B1-caption" class="grid-text"></figcaption>
               </figure>
             </a>
           </div>
           <div class="B2">
-            <a href="https://youtube.com/watch?v=Co-xMnYJq_E" target="_blank">
+            <a id="B2-url" href="https://youtube.com/watch?v=" target="_blank">
               <figure class="grid-item">
-                <img class="grid-image" src="https://i.ytimg.com/vi/Co-xMnYJq_E/hqdefault.jpg?sqp=-oaymwEcCNACELwBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLCS3ZutnvFTFunZ3LTJdXj9Rhha7g">
-                <figcaption class="grid-text">Meet actor and “animal enthusiast,” Elizabeth Lail</figcaption>
+                <img width="100%" height="100%" id="B2-img" class="grid-image">
+                <figcaption id="B2-caption" class="grid-text"></figcaption>
               </figure>
             </a>
           </div>
           <div class="B3">
-            <a href="https://youtube.com/watch?v=uU72tquFglM" target="_blank">
+            <a id="B3-url" href="https://youtube.com/watch?v=" target="_blank">
               <figure class="grid-item">
-                <img class="grid-image" src="https://i.ytimg.com/vi/uU72tquFglM/hqdefault.jpg?sqp=-oaymwEcCNACELwBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLDUgGLphdFY_C6rpsDSy16bSWSjbw">
-                <figcaption class="grid-text"> Meet acclaimed photographer, author, and poet Alexi Lubomirski</figcaption>
+                <img width="100%" height="100%" id="B3-img" class="grid-image">
+                <figcaption id="B3-caption" class="grid-text"> </figcaption>
               </figure>
             </a>
           </div>
         </div>
       </div>
       <style>
-        .valid-answer{
-        background-color: lime !important;
+        .valid-answer {
+          background-color: lime !important;
         }
+
         /* CSS */
         .button-2 {
-        background-color: rgba(51, 51, 51, 0.05);
-        border-radius: 8px;
-        border-width: 0;
-        color: #333333;
-        cursor: pointer;
-        display: inline-block;
-        font-family: "Haas Grot Text R Web", "Helvetica Neue", Helvetica, Arial, sans-serif;
-        font-size: 20px;
-        font-weight: 500;
-        line-height: 30px;
-        list-style: none;
-        margin: 0;
-        padding: 10px 40px;
-        text-align: center;
-        transition: all 200ms;
-        vertical-align: baseline;
-        white-space: nowrap;
-        user-select: none;
-        -webkit-user-select: none;
-        touch-action: manipulation;
+          background-color: rgba(51, 51, 51, 0.05);
+          border-radius: 8px;
+          border-width: 0;
+          color: #333333;
+          cursor: pointer;
+          display: inline-block;
+          font-family: "Haas Grot Text R Web", "Helvetica Neue", Helvetica, Arial, sans-serif;
+          font-size: 20px;
+          font-weight: 500;
+          line-height: 30px;
+          list-style: none;
+          margin: 0;
+          padding: 10px 40px;
+          text-align: center;
+          transition: all 200ms;
+          vertical-align: baseline;
+          white-space: nowrap;
+          user-select: none;
+          -webkit-user-select: none;
+          touch-action: manipulation;
         }
       </style>
       <div style="float:right;width:30%;">
         <p>Answer correctly to these questions to start the experiment !</p>
         <script>
-          let valid_answers = {
-              'partisan': false
-          }
-          function handleAnswer(key, answer){
-            true_answer = {
-              'partisan' : 'B',
-            }
-            explanation = {
-              'partisan' : 'Fox news is more right wing',
-            }
-            
-            let answer_rev = workerParams[key] == 1 ? invertAB(answer): answer
-          
-            let button = document.getElementById('{answer}-button-{key}'.formatUnicorn({key:key, answer:answer}))
-            if(true_answer[key] == answer_rev){
-              button.classList.add('valid-answer')
-              button.disabled = true;
-              
-              let otherButton = document.getElementById('{otherAnswer}-button-{key}'.formatUnicorn({key:key, otherAnswer: invertAB(answer)}))
-              valid_answers[key] = true
-              
-              if(Object.values(valid_answers).every(f => f)){
-                  hideOverlay()
-              }
-            }else{
-              alert('Are you sure ? ' + explanation[key])
-            }
-          
-          }
+
         </script>
-        <p>Which channel <span class="catering-1"></span> <span class="catering-choice"></span> <span class="partisan-choice"></span> ?</p>
+        <p>Which channel <span class="catering-1"></span> <span class="catering-choice"></span> <span
+            class="${dim}-choice"></span> ?</p>
         <div>
-          <button id='A-button-partisan' class="button-2" role="button" onclick="handleAnswer('partisan','A')">A</button>
-          <button id='B-button-partisan' class="button-2" role="button" onclick="handleAnswer('partisan','B')">B</button>
+          <button id="A-button-${dim}" class="button-2" role="button" onclick="handleAnswer('${dim}','A')">A</button>
+          <button id="B-button-${dim}" class="button-2" role="button" onclick="handleAnswer('${dim}','B')">B</button>
         </div>
         <!-- 
           <p>Which channel is <span class="catering-choice"></span> <span class="affluent-choice"></span> ?</p>
@@ -842,106 +1139,100 @@
   </div>
 </div>
 <style>
-  .plyr__control--overlaid {display: none !important;} 
-  .video-embed{
-  max-width: 70%;
-  margin: auto;
-  border-radius: 3%;
-  overflow: hidden;
-  display: none;
+  .plyr__control--overlaid {
+    display: none !important;
+  }
+
+  .video-embed {
+    max-width: 70%;
+    margin: auto;
+    border-radius: 3%;
+    overflow: hidden;
+    display: none;
   }
 </style>
 <script>
-  var playerDict = undefined
-  
-  $(document).ready(function() {  
-  
-    try{
+
+
+  $(document).ready(function () {
+
+    let dim_dict = tutorial_videos["${dim}"] || tutorial_videos['gender']
+
+    if ("${dim}" == "partisan") {
+      $("#partisan-text").css('display', 'block')
+    }
+
+    for (let aOrB of ["A", "B"]) {
+      $("#channel-name-tutorial-url-{aOrB}".formatUnicorn({ aOrB: aOrB })).attr("href", 'https://youtube.com/channel/{chId}'.formatUnicorn({ chId: dim_dict[aOrB]['channelId'] }))
+      $("#channel-tutorial-name-{aOrB}".formatUnicorn({ aOrB: aOrB })).html('{aOrB} : {chName}'.formatUnicorn({ aOrB: aOrB, chName: dim_dict[aOrB]['channelName'] }))
+
+      for (let i = 0; i < 4; i++) {
+        $("#{aOrB}{num}-img".formatUnicorn({ aOrB: aOrB, num: i })).attr("src", "https://i.ytimg.com/vi/{vidId}/hqdefault.jpg".formatUnicorn({ vidId: dim_dict[aOrB]['videoIds'][i] }))
+        $("#{aOrB}{num}-url".formatUnicorn({ aOrB: aOrB, num: i })).attr("href", "https://www.youtube.com/watch?v={vidId}".formatUnicorn({ vidId: dim_dict[aOrB]['videoIds'][i] }))
+        $("#{aOrB}{num}-caption".formatUnicorn({ aOrB: aOrB, num: i })).html(dim_dict[aOrB]['videoTitles'][i])
+
+      }
+    }
+
+    try {
       const b64_var = document.getElementById("json-data").innerHTML;
       const code_var = atob(b64_var)
       parsed = JSON.parse(code_var)
-    }catch(err){
+    } catch (err) {
       parsed = []
     }
-  
+
     const validLength = parseInt("${length}")
-  
-    if(parsed.length != validLength){
+
+    if (parsed.length != validLength) {
       alert('An error occurred, please refresh the page, and contact us if it reoccurs.')
-  
+
     }
-  
-    
+
+
     workerParams = getWorkerParams()
     //workerParams = {'political':parseInt('{political}'), 'partisan':parseInt('{partisan}'), 'affluent':0, 'age':0}
-    
+
     for (const [key, value] of Object.entries(workerParams)) {
-        let choice_key = '.{key}-choice'.formatUnicorn({key:key})
-        let key_value = '{key}-{value}'.formatUnicorn({key:key, value:value})
-  
-        $(choice_key).addClass(key_value)
+      let choice_key = '.{key}-choice'.formatUnicorn({ key: key })
+      let key_value = '{key}-{value}'.formatUnicorn({ key: key, value: value })
+
+      $(choice_key).addClass(key_value)
     }
-    
-  
+
+
     playerDict = {};
-    for (let a of ($('.js-player'))){
+    for (let a of ($('.js-player'))) {
       playerDict[a.id] = new Plyr(a);
     }
-  
-    
+
+
     updatePage(parsed[currentIter++])
-  
+
     //const players = Plyr.setup('.js-player', {fullscreen:false});
-  
+
   });
-  
-  async function setSource(key, value){
-          let player = playerDict[key]
-          player.source = {
-              type: 'video',
-              sources: [
-                {
-                  src: value,
-                  provider: 'youtube',
-                },
-              ],
-            };
-  
-          
-        }
-  
-  function load_video(thumbnail_id, video_elem_id){
-    let revkey = reverseChannels? invertAB(video_elem_id): video_elem_id
-    const video_id = parsed[currentIter-1][revkey]
-  
-    setSource(video_elem_id, video_id)
-  
-    let player = playerDict[video_elem_id]
-    player.on('ready', (event) => {
-      player.play()
-    });
-    
-    document.getElementById(thumbnail_id).style.display = 'none'
-    document.getElementById(video_elem_id).style.display = 'block'
-  
-  }
+
+
 </script>
 <style>
-  .phover{
-  margin:auto;
+  .phover {
+    margin: auto;
   }
-  .phover:hover .play{
-  display:block
+
+  .phover:hover .play {
+    display: block
   }
-  .play{
-  pointer-events:none;
-  position : absolute;
-  top: 50%;  
-  left: 50%; 
-  transform: translate(-50%, -50%);
-  z-index:1;
-  display:none
-  } 
+
+  .play {
+    pointer-events: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1;
+    display: none
+  }
 </style>
 <crowd-form answer-format="flatten-objects">
   <p id="json-data" hidden>${jsons}</p>
@@ -950,7 +1241,7 @@
       <div class="A">
         <div class="section-title">
           <a id="A_channelId" href="BLANKCHANNELIDREF" target="_blank">
-          <span id="A_channelTitle" class="channel-name">BLANKTITLE</span>
+            <span id="A_channelTitle" class="channel-name">BLANKTITLE</span>
           </a>
         </div>
       </div>
@@ -958,69 +1249,85 @@
         <span href="BLANKVIDEOIDREF" target="_blank">
           <figure class="grid-item">
             <div class="phover">
-              <img width="100%" height="100%" id="A_thumbnail_0" class="grid-image" src="BLANKTHUMBNAIL" onclick="load_video('A_thumbnail_0', 'A_videoId_0')">
+              <img width="100%" height="100%" id="A_thumbnail_0" class="grid-image" src="BLANKTHUMBNAIL"
+                onclick="load_video('A_thumbnail_0', 'A_videoId_0')">
               <div class="play">
-                <svg xmlns="http://www.w3.org/2000/svg" width="25%" height="25%" fill="white" class="bi bi-play-fill" viewBox="0 0 16 16">
-                  <path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z"/>
+                <svg xmlns="http://www.w3.org/2000/svg" width="25%" height="25%" fill="white" class="bi bi-play-fill"
+                  viewBox="0 0 16 16">
+                  <path
+                    d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z" />
                 </svg>
               </div>
             </div>
             <div class="video-embed" id="A_videoId_0">
-              <div class="js-player" id="A_videoId_0" data-plyr-provider="youtube" data-plyr-embed-id="bTqVqk7FSmY"></div>
+              <div class="js-player" id="A_videoId_0" data-plyr-provider="youtube" data-plyr-embed-id="bTqVqk7FSmY">
+              </div>
             </div>
             <figcaption id="A_title_0" class="grid-text">BLANKCAPTION</figcaption>
           </figure>
         </span>
       </div>
       <div class="A1">
-        <span  href="BLANKVIDEOIDREF" target="_blank">
+        <span href="BLANKVIDEOIDREF" target="_blank">
           <figure class="grid-item">
             <div class="phover">
-              <img width="100%" height="100%" id="A_thumbnail_1" class="grid-image" src="BLANKTHUMBNAIL" onclick="load_video('A_thumbnail_1', 'A_videoId_1')">
+              <img width="100%" height="100%" id="A_thumbnail_1" class="grid-image" src="BLANKTHUMBNAIL"
+                onclick="load_video('A_thumbnail_1', 'A_videoId_1')">
               <div class="play">
-                <svg xmlns="http://www.w3.org/2000/svg" width="25%" height="25%" fill="white" class="bi bi-play-fill" viewBox="0 0 16 16">
-                  <path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z"/>
+                <svg xmlns="http://www.w3.org/2000/svg" width="25%" height="25%" fill="white" class="bi bi-play-fill"
+                  viewBox="0 0 16 16">
+                  <path
+                    d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z" />
                 </svg>
               </div>
             </div>
             <div class="video-embed" id="A_videoId_1">
-              <div class="js-player" id="A_videoId_1" data-plyr-provider="youtube" data-plyr-embed-id="bTqVqk7FSmY"></div>
+              <div class="js-player" id="A_videoId_1" data-plyr-provider="youtube" data-plyr-embed-id="bTqVqk7FSmY">
+              </div>
             </div>
             <figcaption id="A_title_1" class="grid-text">BLANKCAPTION</figcaption>
           </figure>
         </span>
       </div>
       <div class="A2">
-        <span  href="BLANKVIDEOIDREF" target="_blank">
+        <span href="BLANKVIDEOIDREF" target="_blank">
           <figure class="grid-item">
             <div class="phover">
-              <img width="100%" height="100%" id="A_thumbnail_2" class="grid-image" src="BLANKTHUMBNAIL" onclick="load_video('A_thumbnail_2', 'A_videoId_2')">
+              <img width="100%" height="100%" id="A_thumbnail_2" class="grid-image" src="BLANKTHUMBNAIL"
+                onclick="load_video('A_thumbnail_2', 'A_videoId_2')">
               <div class="play">
-                <svg xmlns="http://www.w3.org/2000/svg" width="25%" height="25%" fill="white" class="bi bi-play-fill" viewBox="0 0 16 16">
-                  <path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z"/>
+                <svg xmlns="http://www.w3.org/2000/svg" width="25%" height="25%" fill="white" class="bi bi-play-fill"
+                  viewBox="0 0 16 16">
+                  <path
+                    d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z" />
                 </svg>
               </div>
             </div>
             <div class="video-embed" id="A_videoId_2">
-              <div class="js-player" id="A_videoId_2" data-plyr-provider="youtube" data-plyr-embed-id="bTqVqk7FSmY"></div>
+              <div class="js-player" id="A_videoId_2" data-plyr-provider="youtube" data-plyr-embed-id="bTqVqk7FSmY">
+              </div>
             </div>
             <figcaption id="A_title_2" class="grid-text">BLANKCAPTION</figcaption>
           </figure>
         </span>
       </div>
       <div class="A3">
-        <span  href="BLANKVIDEOIDREF" target="_blank">
+        <span href="BLANKVIDEOIDREF" target="_blank">
           <figure class="grid-item">
             <div class="phover">
-              <img width="100%" height="100%" id="A_thumbnail_3" class="grid-image" src="BLANKTHUMBNAIL" onclick="load_video('A_thumbnail_3', 'A_videoId_3')">
+              <img width="100%" height="100%" id="A_thumbnail_3" class="grid-image" src="BLANKTHUMBNAIL"
+                onclick="load_video('A_thumbnail_3', 'A_videoId_3')">
               <div class="play">
-                <svg xmlns="http://www.w3.org/2000/svg" width="25%" height="25%" fill="white" class="bi bi-play-fill" viewBox="0 0 16 16">
-                  <path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z"/>
+                <svg xmlns="http://www.w3.org/2000/svg" width="25%" height="25%" fill="white" class="bi bi-play-fill"
+                  viewBox="0 0 16 16">
+                  <path
+                    d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z" />
                 </svg>
               </div>
             </div>
             <div class="video-embed" id="A_videoId_3">
-              <div class="js-player" id="A_videoId_3" data-plyr-provider="youtube" data-plyr-embed-id="bTqVqk7FSmY"></div>
+              <div class="js-player" id="A_videoId_3" data-plyr-provider="youtube" data-plyr-embed-id="bTqVqk7FSmY">
+              </div>
             </div>
             <figcaption id="A_title_3" class="grid-text">BLANKCAPTION</figcaption>
           </figure>
@@ -1033,26 +1340,27 @@
       <div style="display:flex;flex-direction: column;justify-content: center;align-items: center;">
         <h2>Which channel …</h2>
         <div class="question-box">
-          <p>… <span class="catering-1"></span> <span class="partisan-choice"></span> ?</p>
+          <p>… <span class="catering-1"></span> <span class="${dim}-choice"></span> ?</p>
           <div class="radio-pillbox">
-            <radiogroup id="radio-partisan">
+            <radiogroup id="radio-${dim}">
               <div>
-                <input type="radio" name="radio-group-partisan" id="left-partisan" value="Left-partisan" class="first">
-                <label for="left-partisan" class="radio-label">A</label>
-                </input>
+                <input type="radio" name="radio-group-${dim}" id="left-${dim}" value="Left-${dim}" class="first">
+                <label for="left-${dim}" class="radio-label">A</label>
               </div>
               <div>
-                <input type="radio" name="radio-group-partisan" id="right-partisan" value="Right-partisan" class="last">
-                <label for="right-partisan">B</label>
-                </input>
+                <input type="radio" name="radio-group-${dim}" id="right-${dim}" value="Right-${dim}" class="last">
+                <label for="right-${dim}">B</label>
               </div>
             </radiogroup>
           </div>
         </div>
 
-        <crowd-button id='submit-button' form-action="none" variant="primary" data-testid="crowd-submit1" style="padding-top:5vmin" onclick="submitButton()">Submit</crowd-button>
-        <crowd-input hidden id="crowd-input-final" name="batch-results" label="batch-results" value="none"></crowd-input>
-        <crowd-button hidden id='submitter-button' form-action="submit" variant="primary" data-testid="crowd-submit" style="padding-top:5vmin">Submit</crowd-button>
+        <crowd-button id="submit-button" form-action="none" variant="primary" data-testid="crowd-submit1"
+          style="margin-top:5vmin" onclick="submitButton()">Submit</crowd-button>
+        <crowd-input hidden id="crowd-input-final" name="batch-results" label="batch-results"
+          value="none"></crowd-input>
+        <crowd-button hidden id="submitter-button" form-action="submit" variant="primary" data-testid="crowd-submit"
+          style="padding-top:5vmin">Submit</crowd-button>
         <div style="font-family: Roboto,Arial,sans-serif;padding-top:5vmin">
           <span>Progress :</span>
           <span id="current-step">1</span>
@@ -1066,77 +1374,93 @@
       <div class="B">
         <div class="section-title">
           <a id="B_channelId" href="BLANKCHANNELIDREF" target="_blank">
-          <span id="B_channelTitle" class="channel-name">BLANKTITLE</span>
+            <span id="B_channelTitle" class="channel-name">BLANKTITLE</span>
           </a>
         </div>
       </div>
       <div class="B0">
-        <span  href="BLANKVIDEOIDREF" target="_blank">
+        <span href="BLANKVIDEOIDREF" target="_blank">
           <figure class="grid-item">
             <div class="phover">
-              <img width="100%" height="100%" id="B_thumbnail_0" class="grid-image" src="BLANKTHUMBNAIL" onclick="load_video('B_thumbnail_0', 'B_videoId_0')">
+              <img width="100%" height="100%" id="B_thumbnail_0" class="grid-image" src="BLANKTHUMBNAIL"
+                onclick="load_video('B_thumbnail_0', 'B_videoId_0')">
               <div class="play">
-                <svg xmlns="http://www.w3.org/2000/svg" width="25%" height="25%" fill="white" class="bi bi-play-fill" viewBox="0 0 16 16">
-                  <path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z"/>
+                <svg xmlns="http://www.w3.org/2000/svg" width="25%" height="25%" fill="white" class="bi bi-play-fill"
+                  viewBox="0 0 16 16">
+                  <path
+                    d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z" />
                 </svg>
               </div>
             </div>
             <div class="video-embed" id="B_videoId_0">
-              <div class="js-player" id="B_videoId_0" data-plyr-provider="youtube" data-plyr-embed-id="bTqVqk7FSmY"></div>
+              <div class="js-player" id="B_videoId_0" data-plyr-provider="youtube" data-plyr-embed-id="bTqVqk7FSmY">
+              </div>
             </div>
             <figcaption id="B_title_0" class="grid-text">BLANKCAPTION</figcaption>
           </figure>
         </span>
       </div>
       <div class="B1">
-        <span  href="BLANKVIDEOIDREF" target="_blank">
+        <span href="BLANKVIDEOIDREF" target="_blank">
           <figure class="grid-item">
             <div class="phover">
-              <img width="100%" height="100%" id="B_thumbnail_1" class="grid-image" src="BLANKTHUMBNAIL" onclick="load_video('B_thumbnail_1', 'B_videoId_1')">
+              <img width="100%" height="100%" id="B_thumbnail_1" class="grid-image" src="BLANKTHUMBNAIL"
+                onclick="load_video('B_thumbnail_1', 'B_videoId_1')">
               <div class="play">
-                <svg xmlns="http://www.w3.org/2000/svg" width="25%" height="25%" fill="white" class="bi bi-play-fill" viewBox="0 0 16 16">
-                  <path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z"/>
+                <svg xmlns="http://www.w3.org/2000/svg" width="25%" height="25%" fill="white" class="bi bi-play-fill"
+                  viewBox="0 0 16 16">
+                  <path
+                    d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z" />
                 </svg>
               </div>
             </div>
             <div class="video-embed" id="B_videoId_1">
-              <div class="js-player" id="B_videoId_1" data-plyr-provider="youtube" data-plyr-embed-id="bTqVqk7FSmY"></div>
+              <div class="js-player" id="B_videoId_1" data-plyr-provider="youtube" data-plyr-embed-id="bTqVqk7FSmY">
+              </div>
             </div>
             <figcaption id="B_title_1" class="grid-text">BLANKCAPTION</figcaption>
           </figure>
         </span>
       </div>
       <div class="B2">
-        <span  href="BLANKVIDEOIDREF" target="_blank">
+        <span href="BLANKVIDEOIDREF" target="_blank">
           <figure class="grid-item">
             <div class="phover">
-              <img width="100%" height="100%" id="B_thumbnail_2" class="grid-image" src="BLANKTHUMBNAIL" onclick="load_video('B_thumbnail_2', 'B_videoId_2')">
+              <img width="100%" height="100%" id="B_thumbnail_2" class="grid-image" src="BLANKTHUMBNAIL"
+                onclick="load_video('B_thumbnail_2', 'B_videoId_2')">
               <div class="play">
-                <svg xmlns="http://www.w3.org/2000/svg" width="25%" height="25%" fill="white" class="bi bi-play-fill" viewBox="0 0 16 16">
-                  <path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z"/>
+                <svg xmlns="http://www.w3.org/2000/svg" width="25%" height="25%" fill="white" class="bi bi-play-fill"
+                  viewBox="0 0 16 16">
+                  <path
+                    d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z" />
                 </svg>
               </div>
             </div>
             <div class="video-embed" id="B_videoId_2">
-              <div class="js-player" id="B_videoId_2" data-plyr-provider="youtube" data-plyr-embed-id="bTqVqk7FSmY"></div>
+              <div class="js-player" id="B_videoId_2" data-plyr-provider="youtube" data-plyr-embed-id="bTqVqk7FSmY">
+              </div>
             </div>
             <figcaption id="B_title_2" class="grid-text">BLANKCAPTION</figcaption>
           </figure>
         </span>
       </div>
       <div class="B3">
-        <span  href="BLANKVIDEOIDREF" target="_blank">
+        <span href="BLANKVIDEOIDREF" target="_blank">
           <figure class="grid-item">
             <div class="phover">
-              <img width="100%" height="100%" id="B_thumbnail_3" class="grid-image" src="BLANKTHUMBNAIL" onclick="load_video('B_thumbnail_3', 'B_videoId_3')">
+              <img width="100%" height="100%" id="B_thumbnail_3" class="grid-image" src="BLANKTHUMBNAIL"
+                onclick="load_video('B_thumbnail_3', 'B_videoId_3')">
               <div class="play">
-                <svg xmlns="http://www.w3.org/2000/svg" width="25%" height="25%" fill="white" class="bi bi-play-fill" viewBox="0 0 16 16">
-                  <path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z"/>
+                <svg xmlns="http://www.w3.org/2000/svg" width="25%" height="25%" fill="white" class="bi bi-play-fill"
+                  viewBox="0 0 16 16">
+                  <path
+                    d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z" />
                 </svg>
               </div>
             </div>
             <div class="video-embed" id="B_videoId_3">
-              <div class="js-player" id="B_videoId_3" data-plyr-provider="youtube" data-plyr-embed-id="bTqVqk7FSmY"></div>
+              <div class="js-player" id="B_videoId_3" data-plyr-provider="youtube" data-plyr-embed-id="bTqVqk7FSmY">
+              </div>
             </div>
             <figcaption id="B_title_3" class="grid-text">BLANKCAPTION</figcaption>
           </figure>
@@ -1144,23 +1468,23 @@
       </div>
     </div>
   </div>
-  </div>
+
 </crowd-form>
 <script>
   function doc_keyUp(e) {
     // this would test for whichever key is 40 (down arrow) and the ctrl key at the same time
     if (e.key === '1') {
       // call your function to do the thing
-      const radiog = document.getElementById('radio-partisan')
+      const radiog = document.getElementById('radio-${dim}')
       const left = $(radiog).find('.first')[0]
       left.checked = true
-      
-    } else if (e.key == '2'){
-      const radiog = document.getElementById('radio-partisan')
+
+    } else if (e.key == '2') {
+      const radiog = document.getElementById('radio-${dim}')
       const right = $(radiog).find('.last')[0]
       right.checked = true
     }
-  
+
     if (e.shiftKey && e.key === 'Enter') {
       // call your function to do the thing
       const submit = document.getElementById('submit-button')
@@ -1170,3 +1494,5 @@
   // register the handler 
   document.addEventListener('keyup', doc_keyUp, false);
 </script>
+
+</html>
