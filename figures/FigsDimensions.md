@@ -29,11 +29,16 @@ sys.path += [".."]
 
 
 import matplotlib.pyplot as plt
+import matplotlib.font_manager as fm
+
 import pandas as pd
 
 from contextlib import redirect_stderr, redirect_stdout
 
 from youtube_topics import data_path
+fprop = fm.FontProperties(fname=data_path('NotoSansCJKkr-Regular.otf'))
+
+
 from youtube_topics.plotting.social_dim_reddit import many_densities_plot
 from youtube_topics.reddit_averaging import *
 ```
@@ -83,13 +88,15 @@ dimensions = ["age", "gender", "partisan"]
 cmap_dict = {"partisan": "coolwarm", "gender": "PuOr", "age": "PiYG"}
 ```
 
+```python
 #### Read channel names, make them unique
 
-```python
 chan_title = pd.read_feather(data_path('channel_title.feather.zstd')).set_index('channelId')
 is_dup = chan_title['channelTitle'].duplicated()
 chan_title['channelDedup'] = chan_title['channelTitle']
-chan_title.loc[is_dup, 'channelDedup'] = chan_title.loc[is_dup, 'channelDedup'] + chan_title.loc[is_dup].index
+chan_title.loc[is_dup, 'channelDedup'] = (chan_title.loc[is_dup, 'channelDedup'] +
+                                          pd.Series(chan_title.loc[is_dup].index, index=chan_title.loc[is_dup].index).apply(lambda s: f" ({s})"))
+
 chan_title['channelTitle'] = chan_title['channelDedup']
 del chan_title['channelDedup']
 ```
@@ -130,9 +137,14 @@ plt.savefig(data_path("figures_out/dimensions_singlecol.pdf"), dpi=300, bbox_inc
 ## Plot large with channel names
 
 ```python
+fprop = fm.FontProperties(fname=data_path('NotoSansCJKkr-Regular.otf'))
 with redirect_stderr(None), redirect_stdout(None):
     many_densities_plot(
-        ["age", "gender", "partisan"], cluster_df, reddit_dim_nondup, percentilize=False
+        ["age", "gender", "partisan"], cluster_df, reddit_dim_nondup, percentilize=False, fontproperties=fprop
     )
 plt.savefig(data_path("figures_out/dimensions_fullcol.pdf"), dpi=300, bbox_inches="tight", pad_inches=0)
+```
+
+```python
+
 ```
