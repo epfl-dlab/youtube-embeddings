@@ -10,8 +10,9 @@ import logging
 import numpy as np
 import gspread
 import innertube
+import functools
 
-
+from functools import lru_cache
 from .inner_proxies.channel import time_to_sec
 from .inner_proxies.multiprocessing import retry
 
@@ -361,11 +362,26 @@ def recent_thumbnails(client, channel_id, nthumbs=10, ret_chan_name=False):
 
     return df
 
+class BlackBox:
+    """All BlackBoxes are the same."""
+    def __init__(self, contents):
+        # TODO: use a weak reference for contents
+        self._contents = contents
+
+    @property
+    def contents(self):
+        return self._contents
+
+    def __eq__(self, other):
+        return isinstance(other, type(self))
+
+    def __hash__(self):
+        return hash(type(self))
 
 @retry(tries=5, delay=10)
-def channel_df(client, channel_id, nthumbs=4):
-    """Create DataFrame with metadata for uploading as csv to mturk"""
-
+@functools.lru_cache()
+def _channel_df(blackbox_client, channel_id, nthumbs=4):
+    client = blackbox_client.contents
     df, chan_name = recent_thumbnails(
         client, channel_id, ret_chan_name=True, nthumbs=nthumbs
     )
@@ -388,6 +404,10 @@ def channel_df(client, channel_id, nthumbs=4):
 
     return concat_df.assign(channelTitle=chan_name, channelId=channel_id)
 
+def channel_df(client, channel_id, nthumbs=4):
+    """Create DataFrame with metadata for uploading as csv to mturk"""
+    return _channel_df(BlackBox(client),  channel_id, nthumbs=nthumbs)
+    
 
 def replace_emoji_characters(s):
     """Placeholder, no longer need to replace emoji characters"""
