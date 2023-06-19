@@ -101,7 +101,7 @@ def axis_name(dimension_name):
     
     return name
 
-def many_densities_plot(dimens_to_plot, clustering, scores_nonpctl, percentilize=True, export_raw_data=False, single_column=False):
+def many_densities_plot(dimens_to_plot, clustering, scores_nonpctl, percentilize=True, export_raw_data=False, single_column=False, fontproperties=None):
     
     #clustering = load_clustering(clustering_name)
 
@@ -181,7 +181,7 @@ def many_densities_plot(dimens_to_plot, clustering, scores_nonpctl, percentilize
     plt.subplots_adjust(wspace=0, hspace=1)
 
     glossary = []
-    def annotate_outlier(ax, name, x, y, cluster_id, outliertype='minima',color=None):
+    def annotate_outlier(ax, name, x, y, cluster_id, outliertype='minima',color=None, fontproperties=None):
         placement = {"minima":"top","maxima":"bottom"}[outliertype]
         
         glossary.append(name)
@@ -192,7 +192,7 @@ def many_densities_plot(dimens_to_plot, clustering, scores_nonpctl, percentilize
         ax.annotate(name, xy=(x, y), size=8, ha=ha,
                     va=placement,
                     xytext=(x, y + annotation_offset * (-1 if placement == 'top' else 1)),
-                   arrowprops=dict(color=color, arrowstyle="->"), c=color, zorder=999)
+                   arrowprops=dict(color=color, arrowstyle="->"), c=color, zorder=999, fontproperties=fontproperties)
 
     metadata_rows = []
     
@@ -359,7 +359,7 @@ def many_densities_plot(dimens_to_plot, clustering, scores_nonpctl, percentilize
                     outlier_x = to_plot_for_cluster[dimen].loc[community]
                     outlier_y = to_plot_for_cluster["y"].loc[community]
 
-                    annotate_outlier(ax, community, outlier_x, outlier_y, cid, outliertype=outliertype, color=color)
+                    annotate_outlier(ax, community, outlier_x, outlier_y, cid, outliertype=outliertype, color=color, fontproperties=fontproperties)
 
         ax.set_xlabel(axis_label(dimen, include_name=False), fontsize=7)
         if percentilize:
