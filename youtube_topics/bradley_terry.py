@@ -5,12 +5,15 @@ import choix
 import scipy
 import plotly.express as px
 
+import logging
 import matplotlib.pyplot as plt
 import json
 import base64
 import pandas as pd
 import numpy as np
 
+import time
+import boto3
 import innertube
 import seaborn as sns
 from plotly.offline import plot
@@ -110,6 +113,7 @@ def answer_df(fulldf, dimensions=["partisan"]):
     """
 
     # parse answer
+    fulldf = fulldf[fulldf['AssignmentStatus'] != 'Rejected']
     fulldf["answers"] = fulldf["Answer.batch-results"].apply(parse_answer)
 
     def key_to_list(d):
@@ -162,25 +166,30 @@ def plot_dim_bins(df, xs, ys, xcol="dimnorm", ycol="nessnorm", title_col='channe
 def sample_per_label(df, num_per_label, oversample=1, seed=0):
     """Hierarchical sampling over labels"""
     
-    sampled_channels = df.groupby("label").sample(
-        num_per_label * oversample, replace=False, random_state=seed
-    )
+    sampled_channels = df.groupby("label").apply(lambda x: x.sample(
+        min(len(x), int(np.ceil(num_per_label * oversample))), replace=False, random_state=seed
+    )).reset_index(level=0, drop=True)
 
     mask = (
-        sampled_channels.reset_index().channelId.apply(
-            lambda x: channel_df(client, x).dropna().shape[0]
+            sampled_channels.reset_index().channelId.apply(
+                lambda x: channel_df(client, x).dropna().shape[0]
+            )
+            == 1
         )
-        == 1
-    )
 
     masked = sampled_channels.reset_index()[mask]
 
-    return (
+    final_df = (
         masked.groupby("label")
         .apply(lambda x: x[:num_per_label])
         .reset_index(drop=True)
         .set_index("channelId")
     )
+
+    if not (final_df['label'].value_counts() == num_per_label).all():
+        logging.error(f'Could not sample {num_per_label} channels for all labels, try increasing oversample, or lower it')
+        
+    return final_df
 
 
 def sample_bt(df, sample_size, pairings_per_channel, seed=1, batch_size=50):
@@ -218,16 +227,16 @@ def sample_bt(df, sample_size, pairings_per_channel, seed=1, batch_size=50):
     return batched_mturked_bt
 
 
-def topic_refetch(df, topic, xs, ys, dim):
+def topic_refetch(df, topic, xs, ys, dim, mean_method='mean', std_method='std'):
     """Attribute label for each channel in topic based on dimension and dimension-ness value"""
     
     topiconly = df.query("topic == @topic")
     dimness = f"{dim}-ness"
 
     topiconly = topiconly.assign(
-        topicdim=(topiconly[dim] - topiconly[dim].mean()) / topiconly[dim].std(),
-        topicness=(topiconly[dimness] - topiconly[dimness].mean())
-        / topiconly[dimness].std(),
+        topicdim=(topiconly[dim] - topiconly[dim].agg(mean_method)) / topiconly[dim].agg(std_method),
+        topicness=(topiconly[dimness] - topiconly[dimness].agg(mean_method))
+        / topiconly[dimness].agg(std_method),
     )
 
     topiconly["label"] = 0
@@ -264,7 +273,7 @@ def dim_corrs(rankdf, dims, dim="partisan"):
 
     fullrank = rankdf.join(rank_reddit.rename(columns=lambda i: f"reddit_{i}"))
 
-    return scipy.stats.kendalltau(fullrank[dim], fullrank[f"reddit_{dim}"]).correlation
+    return scipy.stats.kendalltau(fullrank[dim], fullrank[f"reddit_{dim}"], variant="c").correlation
 
 
 def plot_reg_correlation(rankdf, dim, default_dims, ax=None,
@@ -334,10 +343,10 @@ def plot_reg_correlation(rankdf, dim, default_dims, ax=None,
     if not x_label:
         ax.set(xlabel=None)
 
-    ax.axhline(dim_corrs(rankdf, default_dims, dim=dim), c="r", label="reddit baseline")
+    line = ax.axhline(dim_corrs(rankdf, default_dims, dim=dim), c="r", label="reddit baseline")
 
     if legend:
-        ax.legend(handles + line, labels + [line[0].get_label()], loc='lower right')
+        ax.legend(handles + [line], labels + [line.get_label()], loc='lower right')
 
 
 def rank_df(answerdf, dimensions=["partisan"]):
@@ -462,3 +471,155 @@ def plot_corr_csv(path, dimension, default_dims, ax=None, reverse_dim=True, **kw
     df_rank = get_rank(df, dimension, reverse_dim=reverse_dim)
 
     plot_reg_correlation(df_rank, dimension, default_dims, ax=ax, **kwargs)
+
+    
+class BTMTurkHelper(object):
+
+    def __init__(self, secret_path, queue_url, limit_qual_id, counter_qual_id, counter_limit=4, endpoint='https://mturk-requester-sandbox.us-east-1.amazonaws.com'):
+
+        with open(data_path(secret_path), 'r') as handle:
+            handle.readline()
+            user, pwd = handle.readline().strip().split(',')
+
+        self.counter_qual_id = counter_qual_id
+        self.limit_qual_id = limit_qual_id
+        self.counter_limit = counter_limit
+        
+        self.queue_url = queue_url
+        self.mturk = boto3.client('mturk',
+                                  aws_access_key_id=user,
+                                  aws_secret_access_key=pwd,
+                                  region_name='us-east-1',
+                                  endpoint_url=endpoint)
+
+        self.sqs = boto3.client('sqs',
+                                aws_access_key_id=user,
+                                aws_secret_access_key=pwd,
+                                region_name='us-east-1')
+
+    def increment_user_qualification(self, worker_id):
+        response = None
+
+        # get counter score
+        try:
+            response = self.mturk.get_qualification_score(
+            QualificationTypeId=self.counter_qual_id,
+            WorkerId=worker_id
+            )
+        # ignore error if not yet set
+        except self.mturk.exceptions.RequestError as e:
+            if not e.response['Error']['Message'].startswith('You requested a Qualification that does not exist.'):
+                logging.error(f'Could not get qualification {self.counter_qual_id} for worker {worker_id}')
+                
+        # increment counter score
+        # if not yet set, set it to 1
+        incr = (response['Qualification']['IntegerValue'] if response is not None else 0) + 1 
+        
+        print('Increasing counter')
+        self.mturk.associate_qualification_with_worker(
+                QualificationTypeId=self.counter_qual_id,
+                WorkerId=worker_id,
+                IntegerValue=incr,
+                SendNotification=False
+            )
+        
+        # if over limit, associate worker with limit achieved qualification
+        if incr > self.counter_limit:
+            print('Over limit')
+            
+            self.mturk.associate_qualification_with_worker(
+                QualificationTypeId=self.limit_qual_id,
+                WorkerId=worker_id,
+                IntegerValue=1,
+                SendNotification=False
+            )
+
+    def listener_bogus_qualification(self, sleep_normal=2, sleep_longer=3):
+        """ This function should run separately to ensure qualifications are being assigned.
+
+        :param handle_qualification: function to handle the response of a given worker to an assignment, extracting the
+        worker id and the qualification name. This qualification will then be assigned to the worker.
+        :param sleep_normal: How much time until next request to Amazon SQS in case there is a new assignment.
+        :param sleep_longer: How much time until next request to Amazon SQS in case there is no new assignment.
+        :return: Nothing.
+        """
+
+        while True:
+
+            response = self.sqs.receive_message(QueueUrl=self.queue_url,
+                                                AttributeNames=['All'],
+                                                MaxNumberOfMessages=10,
+                                                WaitTimeSeconds=0
+                                                )
+            if "Messages" not in response:
+                time.sleep(sleep_longer)
+                continue
+
+            messages = response["Messages"]
+
+            for message in response['Messages']:
+                receipt = message["ReceiptHandle"]
+
+                body = json.loads(message["Body"])
+
+                for events in body['Events']:
+                    if 'WorkerId' in events:
+                        self.increment_user_qualification(events['WorkerId'])
+
+                self.sqs.delete_message(QueueUrl=self.queue_url, ReceiptHandle=receipt)
+                
+            time.sleep(sleep_normal)
+            
+            
+# hit_ids = []
+
+# for i in tqdm(range(len(hit_df))):
+
+#     response = helper.mturk.create_hit(
+#         MaxAssignments=1,
+#         AutoApprovalDelayInSeconds=3600,
+#         LifetimeInSeconds=3600,
+#         AssignmentDurationInSeconds=3600,
+#         Reward='0.01',
+#         Title='Select the channel that appeals the most to younger/older audiences',
+#         Keywords='categorize, youtube, channel, similarity, thumbnail, video, image',
+#         Description='Given two youtube channels, pick the one that appeals the most to younger/older audiences',
+#         QualificationRequirements=[
+#           {
+#             "QualificationTypeId": '000000000000000000L0',
+#             "Comparator": 'GreaterThanOrEqualTo',
+#             "IntegerValues": [95]
+#           },
+#     #     {
+#     #         "QualificationTypeId": '00000000000000000071',
+#     #         "Comparator": 'EqualTo',
+#     #         "LocaleValues": [
+#     #           {
+#     #               "Country": "US",
+#     #          }
+#     #         ]
+#     #       },
+#           {
+#             "QualificationTypeId": limit_qual_id,
+#             "Comparator": 'DoesNotExist'
+#           },
+
+#         ],
+#         HITLayoutId=hit_layout_id,
+#         HITLayoutParameters=[{'Name':k, 'Value':str(v)} for k,v in hit_df.iloc[i].items() if k in ALLOWED_KEYS]
+#     )
+
+#     hit_ids.append(response['HIT']['HITId'])
+#     notification = {'Destination': helper.queue_url, 'Transport': 'SQS',
+#                     'Version': '2014-08-15', 'EventTypes': ['AssignmentSubmitted']}
+
+#     vals = helper.mturk.update_notification_settings(HITTypeId=response['HIT']['HITTypeId'],
+#                                             Notification=notification, Active=True)
+
+
+## Get back results
+
+# response = helper.mturk.list_assignments_for_hit(
+#     HITId="3K1H3NEY8ZI9QPCZS4OISFXQVT5GDS",
+#     MaxResults=100
+# )
