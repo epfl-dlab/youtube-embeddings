@@ -40,10 +40,10 @@ from youtube_topics.reddit_averaging import (averaging_embed, get_scores_df,
 
 ```python
 subs_df = pd.read_parquet(
-    "/dlabdata1/scratch_060/scratch/boesinge/youtube-topics/submissions_with_channel.parquet/"
+    data_path("submissions_with_channel.parquet/")
 )
 comms_df = pd.read_parquet(
-    "/dlabdata1/scratch_060/scratch/boesinge/youtube-topics/comments_with_channel.parquet"
+    data_path("/dlabdata1/scratch_060/scratch/boesinge/youtube-topics/comments_with_channel.parquet")
 )
 
 concat = pd.concat((comms_df, subs_df))
