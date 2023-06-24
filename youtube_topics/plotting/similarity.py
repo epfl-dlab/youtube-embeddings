@@ -67,20 +67,23 @@ def fraction_plot_df(full_df_agreement, ax, fontsize=12):
         .reset_index()
     )
 
-    sns.barplot(
-        agg_df,
-        x="frac",
-        hue="embed",
-        y="agg",
-        hue_order=["reddit", "content", "recomm"],
-        ax=ax,
-    )
+    if ax is not None:
+        sns.barplot(
+            agg_df,
+            x="frac",
+            hue="embed",
+            y="agg",
+            hue_order=["reddit", "content", "recomm"],
+            ax=ax,
+        )
 
-    for cont in ax.containers:
-        ax.bar_label(cont, fmt="%.2f")
+        for cont in ax.containers:
+            ax.bar_label(cont, fmt="%.2f")
 
-    ax.set_xlabel("q", fontsize=fontsize)
-    ax.set_ylabel("Agreement between Workers and Embedding", fontsize=fontsize)
-    ax.set_title(
-        "Agreement between Workers and Embedding as a function of q", fontsize=fontsize
-    )
+        ax.set_xlabel("q", fontsize=fontsize)
+        ax.set_ylabel("Agreement between Workers and Embedding", fontsize=fontsize)
+        ax.set_title(
+            "Agreement between Workers and Embedding as a function of q", fontsize=fontsize
+        )
+        
+    return agg_df

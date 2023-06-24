@@ -277,7 +277,7 @@ def dim_corrs(rankdf, dims, dim="partisan"):
 
 
 def plot_reg_correlation(rankdf, dim, default_dims, ax=None,
-                         saved_dims_path='dims/regression_per_category',
+                         saved_dims_path='dims/regression_overall',
                          container_label=True,
                          legend=True,
                          use_hue=True,
@@ -295,9 +295,10 @@ def plot_reg_correlation(rankdf, dim, default_dims, ax=None,
     recomm_reg = pd.read_feather(
         data_path(f"{saved_dims_path}/recomm_{dim}.feather.zstd")
     ).set_index("channelId")
-    reddit_reg = pd.read_feather(
-        data_path(f"{saved_dims_path}/reddit_{dim}.feather.zstd")
-    ).set_index("channelId")
+    # reddit_reg = pd.read_feather(
+    #     data_path(f"{saved_dims_path}/reddit_{dim}.feather.zstd")
+    # ).set_index("channelId")
+    reddit_reg = default_dims
     content_reg = pd.read_feather(
         data_path(f"{saved_dims_path}/content_{dim}.feather.zstd")
     ).set_index("channelId")
@@ -342,11 +343,13 @@ def plot_reg_correlation(rankdf, dim, default_dims, ax=None,
         ax.set(ylabel=None)
     if not x_label:
         ax.set(xlabel=None)
+        
+    return results_df
 
-    line = ax.axhline(dim_corrs(rankdf, default_dims, dim=dim), c="r", label="reddit baseline")
+#     line = ax.axhline(dim_corrs(rankdf, default_dims, dim=dim), c="r", label="reddit baseline")
 
-    if legend:
-        ax.legend(handles + [line], labels + [line.get_label()], loc='lower right')
+#     if legend:
+#         ax.legend(handles + [line], labels + [line.get_label()], loc='lower right')
 
 
 def rank_df(answerdf, dimensions=["partisan"]):
@@ -397,7 +400,7 @@ def get_rank(res, dimension, reverse_dim=True):
 
 
 def plot_res_scatter(path, outpath, dimension, title_series,
-                     title_col='channelTitle', saved_dims_path='dims/regression_per_category',
+                     title_col='channelTitle', saved_dims_path='dims/regression_overall',
                      reverse_dim=True):
     """Plot correlation scatter plot between BT ranks and dimension ranks"""
     
@@ -470,7 +473,7 @@ def plot_corr_csv(path, dimension, default_dims, ax=None, reverse_dim=True, **kw
     df = pd.read_csv(path)
     df_rank = get_rank(df, dimension, reverse_dim=reverse_dim)
 
-    plot_reg_correlation(df_rank, dimension, default_dims, ax=ax, **kwargs)
+    return plot_reg_correlation(df_rank, dimension, default_dims, ax=ax, **kwargs)
 
     
 class BTMTurkHelper(object):
