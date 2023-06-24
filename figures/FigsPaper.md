@@ -64,7 +64,7 @@ with_overall = pd.concat(
 )
 
 # topic classification scores
-scores_df = pd.read_json(data_path('figures_in/topic_classification.jsonl'), lines=True)
+scores_df = pd.read_json(data_path('figures_in/topic_classification.jsonl'), lines=True).replace('Recomm', 'Recommendation')
 
 # rank correlation reddit
 replace_dict = {
@@ -108,7 +108,7 @@ ax.set_title(
     fontsize=FONTSIZE,
 )
 handles, labels = ax.get_legend_handles_labels()
-ax.legend(handles, [x.capitalize() for x in labels], loc="upper left")
+ax.legend(handles, [replace_dict[x] for x in labels], loc="upper left")
 
 
 # overall plot
@@ -128,7 +128,7 @@ sns.barplot(
     y="scores",
     ax=ax,
     palette='tab10',
-    hue_order=['Reddit', 'Content', 'Recomm']
+    hue_order=['Reddit', 'Content', 'Recommendation']
 )
 
 for cont in ax.containers:
@@ -141,6 +141,75 @@ ax.get_legend().remove()
 
 set_size(fig, (14, 3.5), eps=1e-3, dpi=300)
 plt.savefig(data_path("figures_out/fig_semantic.pdf"), dpi=300, bbox_inches="tight", pad_inches=0)
+```
+
+### Semantic experiment tables
+
+```python
+## FIRST PLOT
+
+order = ['Reddit','Content','Recommendation']
+frac_col = 'k'
+
+first_ax_df = (fraction_plot_df(full_df_agreement, ax=None)
+               .applymap(lambda x: replace_dict.get(x, x))
+               .rename(columns={'embed':'Embedding','frac':frac_col, 'agg':'Value'})
+               .pivot(index='Embedding', columns=frac_col, values='Value')
+              )
+
+rest_frac = list(set(first_ax_df.T.reset_index().columns) - set([frac_col]))
+
+first_ax_df = first_ax_df.loc[order]
+first_ax_df.index = order
+
+print(first_ax_df
+      .T.reset_index()
+      .style.format('{:.2f}', subset=rest_frac)
+      .format(lambda x: f'{x*44000:n}', subset=[frac_col])
+      .highlight_max(subset=None, props='textbf:--rwrap', axis=1)
+      .hide(axis=0)
+      .format_index(lambda x: f'\\textbf{{{x}}}', axis='columns')
+      .to_latex(column_format="c|ccc", hrules=True, caption='Agreement between workers and embedding as a function of k', label='table_agreement_k'))
+
+## SECOND PLOT
+worker_col = 'Min \#Workers Agreeing'
+second_ax_df = (plot_dfs["overall"].applymap(lambda x: replace_dict.get(x, x))
+               .rename(columns={'embed':'Embedding','agg_num':worker_col, 'agg':'Value'})
+               .pivot(index='Embedding', columns=worker_col, values='Value')
+              )
+
+
+rest_worker = list(set(second_ax_df.T.reset_index().columns) - set([worker_col]))
+
+
+second_ax_df = second_ax_df.loc[order]
+second_ax_df.index = order
+
+print(second_ax_df
+      .T.reset_index()
+      .style.format('{:.2f}')
+      .highlight_max(props='textbf:--rwrap', axis=1, subset=rest_worker)
+      .hide(axis=0)
+      .format_index(lambda x: f'\\textbf{{{x}}}', axis='columns')
+      .to_latex(column_format="c|ccc", hrules=True, caption='Agreement between workers and embedding as a function of minimum \#Workers agreeing', label='table_agreement_minwork'))
+
+## THIRD PLOT
+scores_df['avg_score'] = scores_df['scores'].apply(np.mean)
+third_ax_df = (scores_df
+               .rename(columns={'embed':'Embedding','topic':'Category', 'avg_score':'Value'})
+               .pivot(index='Embedding', columns='Category', values='Value')
+              )
+
+third_ax_df = third_ax_df.loc[order]
+third_ax_df.index = order
+
+print(third_ax_df
+      .T.reset_index()
+      .style.format('{:.2f}', subset=['Reddit','Content','Recommendation'])
+      .highlight_max(props='textbf:--rwrap', axis=1, subset=rest_worker)
+      .hide(axis=0)
+      .format_index(lambda x: f'\\textbf{{{x}}}', axis='columns')
+      .to_latex(column_format="c|ccc", hrules=True, caption='F1 Score per category', label='table_f1_cat'))
 ```
 
 <!-- #region tags=[] -->
@@ -161,13 +230,13 @@ SB_BASELINE_TEXT = "Dimensions from subreddit vectors"
 
 ax = ax_dict['rankcorrlabel']
 sns.barplot(
-    ord_reddit[["Reddit", "Content","Recommendation"]],
+    ord_reddit.rename(columns={"Subreddit":"Reddit", "Reddit":"Subreddit"})[["Reddit", "Content","Recommendation"]],
     order=["Reddit","Content","Recommendation"],
     ax=ax,
 )
-barheight = ord_reddit["Subreddit"].mean()
-ax.axhline(barheight, c="r")
-ax.text(-0.48, barheight - barheight / 0.95 * 0.05, SB_BASELINE_TEXT, ha="left")
+# barheight = ord_reddit["Subreddit"].mean()
+# ax.axhline(barheight, c="r")
+# ax.text(-0.48, barheight - barheight / 0.95 * 0.05, SB_BASELINE_TEXT, ha="left")
 ax.set(
     title=r"$\bf{(a)}$ Partisan - Political channel categories",
     xlabel="",
@@ -175,16 +244,19 @@ ax.set(
 )
 
 ax = ax_dict['bt_partisan']
-plot_corr_csv(data_path("bt/news_partisan_res.csv"), 'partisan', default_dims, ax=ax, legend=False, container_label=False, use_hue=False, order=["Reddit","Content","Recommendation"], y_label=False, x_label=False, replace_dict=replace_dict)
-ax.set(title=r'$\bf{(b)}$ Partisan - "News & Politics" category BT')
+plot2_df = plot_corr_csv(data_path("bradley_terry/bt_partisan_res.csv"), "partisan", default_dims, ax=ax, container_label=False, replace_dict=replace_dict, use_hue=False, order=['Reddit', 'Content', 'Recommendation'])
+ax.set(title=r'$\bf{(b)}$ Partisan - "News & Politics" category BT', ylabel='', xlabel='')
+# ax.get_legend().remove()
 
 ax = ax_dict['bt_gender']
-plot_corr_csv(data_path("bt/howto_gender_res.csv"), "gender", default_dims, ax=ax, reverse_dim=False, legend=False, container_label=False, use_hue=False, order=["Reddit","Content","Recommendation"], y_label=False, x_label=False, replace_dict=replace_dict)
-ax.set(title=r'$\bf{(c)}$ Gender - "Howto & Style" category BT')
+plot3_df = plot_corr_csv(data_path("bradley_terry/bt_gender_res.csv"), "gender", default_dims, ax=ax, container_label=False, replace_dict=replace_dict, use_hue=False, order=['Reddit', 'Content', 'Recommendation'])
+ax.set(title=r'$\bf{(c)}$ Gender - "Howto & Style" category BT', ylabel='', xlabel='')
+# ax.get_legend().remove()
 
 ax = ax_dict['bt_age']
-plot_corr_csv(data_path("bt/music_age_res.csv"), "age", default_dims, ax=ax, legend=False, container_label=False, use_hue=False, order=["Reddit","Content","Recommendation"], y_label=False, x_label=False,replace_dict=replace_dict)
-ax.set(title=r'$\bf{(d)}$ Age - "Music" category BT')
+plot4_df = plot_corr_csv(data_path("bradley_terry/bt_age_res.csv"), "age", default_dims, ax=ax, container_label=False, replace_dict=replace_dict, use_hue=False, order=['Reddit', 'Content', 'Recommendation'])
+ax.set(title=r'$\bf{(d)}$ Age - "Music" category BT', ylabel='', xlabel='')
+# ax.get_legend().remove()
 
 for ax in ax_dict.values():
     for cont in ax.containers:
@@ -192,4 +264,30 @@ for ax in ax_dict.values():
         
 set_size(fig, (14, 3.5), eps=1e-3, dpi=300)
 plt.savefig(data_path("figures_out/fig_social_dimensions.pdf"), dpi=300, bbox_inches="tight", pad_inches=0)
+```
+
+## Dimension tables
+
+```python
+plot1_df = ord_reddit.rename(columns={"Subreddit":"Reddit", "Reddit":"Subreddit"})[["Reddit", "Content","Recommendation"]]
+    
+
+plot_df = pd.concat([plot1_df.assign(Scoring='Partisan Labels').set_index('Scoring')] +
+                    [x.rename(columns={'embed':'Scoring'}).set_index('Scoring').T for x in [plot2_df, plot3_df, plot4_df]])
+
+print(plot_df[['Reddit','Content','Recommendation']]
+      .style.format('{:.2f}', subset=None)
+      .format_index(lambda x: {'partisan':'BT Partisan', 
+                                      'gender':'BT Gender',
+                                      'age':'BT Age'
+                                     }.get(x,x))
+      .highlight_max(subset=None, props='textbf:--rwrap', axis=1)
+      .format_index(lambda x: f'\\textbf{{{x}}}', axis='columns')
+      .to_latex(hrules=True,
+                caption='Social Dimensions experiments table',
+                label='dims_table',
+                clines="skip-last;data",
+                position_float="centering",
+                multicol_align="|c|",
+               ))
 ```
