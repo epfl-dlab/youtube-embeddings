@@ -33,8 +33,12 @@ import sys
 sys.path += [".."]
 # isort: on
 
+from datetime import datetime
+import pytz
 import pickle
-
+import json
+import pickle
+import boto3
 import innertube
 import matplotlib.pyplot as plt
 import numpy as np
@@ -43,10 +47,13 @@ import plotly.express as px
 import regex as re
 import scipy
 import seaborn as sns
+import time
+import logging
 from plotly.offline import plot
 
+from tqdm.auto import tqdm
 from youtube_topics import data_path
-from youtube_topics.bradley_terry import get_rank, topic_refetch, get_bt_topic, plot_dim_bins, plot_corr_csv, plot_res_scatter
+from youtube_topics.bradley_terry import get_rank, topic_refetch, get_bt_topic, plot_dim_bins, plot_corr_csv, plot_res_scatter, BTMTurkHelper
 from youtube_topics.mturk import channel_df, mturkify, prep_mturk_batch
 
 sns.set_style("whitegrid")
@@ -99,7 +106,7 @@ While those experiments are technically seeded, you might get different sampling
 
 ```python
 # bin borders
-xs = [-5, -1.5, -0.5, 0.5, 1.5, 5]
+xs = [-5, -1.25, -0.5, 0.5, 1.25, 5]
 ys = [-5, 0, 5]
 ```
 
@@ -107,9 +114,9 @@ ys = [-5, 0, 5]
 
 ```python
 dim = "gender"
-howto_gender = topic_refetch(fulldim, "Howto & Style", xs, ys, dim)
-howto_gender_bt = get_bt_topic(howto_gender, 6, 20, seed=5).assign(dim=dim)
-howto_gender_bt.to_csv(data_path("bt/howto_gender_bt.csv"), index=False)
+howto_gender = topic_refetch(fulldim, "Howto & Style", xs, ys, dim, mean_method='mean')
+howto_gender_bt = get_bt_topic(howto_gender, n_per_label=10, pair_per_channel=20, seed=300, batch_size=20, oversample=1.5).assign(dim=dim)
+howto_gender_bt.to_csv(data_path("bt/howto_gender_bt_large.csv"), index=False)
 plot_dim_bins(howto_gender, xs, ys, xcol="topicdim", ycol="topicness")
 ```
 
@@ -117,9 +124,9 @@ plot_dim_bins(howto_gender, xs, ys, xcol="topicdim", ycol="topicness")
 
 ```python
 dim = "partisan"
-news_partisan = topic_refetch(fulldim, "News & Politics", xs, ys, dim)
-news_partisan_bt = get_bt_topic(news_partisan, 6, 20, seed=5).assign(dim=dim)
-news_partisan_bt.to_csv(data_path("bt/news_partisan_bt.csv"), index=False)
+news_partisan = topic_refetch(fulldim, "News & Politics", xs, ys, dim, mean_method='mean')
+news_partisan_bt = get_bt_topic(news_partisan, n_per_label=10, pair_per_channel=20, seed=300, batch_size=20, oversample=1.5).assign(dim=dim)
+news_partisan_bt.to_csv(data_path("bt/news_partisan_bt_large.csv"), index=False)
 plot_dim_bins(news_partisan, xs, ys, xcol="topicdim", ycol="topicness")
 ```
 
@@ -127,47 +134,8 @@ plot_dim_bins(news_partisan, xs, ys, xcol="topicdim", ycol="topicness")
 
 ```python
 dim = "age"
-music_age = topic_refetch(fulldim, "Music", xs, ys, dim)
-music_age_bt = get_bt_topic(music_age, 6, 20, seed=5).assign(dim=dim)
-music_age_bt.to_csv(data_path("bt/music_age_bt.csv"), index=False)
+music_age = topic_refetch(fulldim, "Music", xs, ys, dim, mean_method='mean')
+music_age_bt = get_bt_topic(music_age, n_per_label=10, pair_per_channel=20, seed=300, batch_size=20, oversample=1.5).assign(dim=dim)
+music_age_bt.to_csv(data_path("bt/music_age_bt_large.csv"), index=False)
 plot_dim_bins(music_age, xs, ys, xcol="topicdim", ycol="topicness")
-```
-
-## Read results, get Bradley-Terry (/Plackett-Luce) rankings
-
-```python
-fig, axs = plt.subplots(ncols=3, figsize=(15, 5))
-
-plot_corr_csv(data_path("bt/news_partisan_res.csv"), "partisan", default_dims, ax=axs[0])
-axs[0].set(title="Partisan - News category correlation")
-
-plot_corr_csv(data_path("bt/howto_gender_res.csv"), "gender", default_dims, ax=axs[1], reverse_dim=False)
-axs[1].set(title="Gender - Howto category correlation")
-
-plot_corr_csv(data_path("bt/music_age_res.csv"), "age", default_dims, ax=axs[2])
-axs[2].set(title="Age - Music category correlation")
-
-plt.suptitle("Correlation between Bradley Terry ranks & Regression training ranks")
-```
-
-```python
-plot_res_scatter(
-    data_path("bt/news_partisan_res.csv"),
-    data_path("bt/news_partisan_scatter.html"),
-    "partisan",
-    title_series
-)
-plot_res_scatter(
-    data_path("bt/howto_gender_res.csv"),
-    data_path("bt/howto_gender_scatter.html"),
-    "gender",
-    title_series,
-    reverse_dim=False
-)
-plot_res_scatter(
-    data_path("bt/music_age_res.csv"),
-    data_path("bt/music_age_scatter.html"),
-    "age",
-    title_series
-)
 ```

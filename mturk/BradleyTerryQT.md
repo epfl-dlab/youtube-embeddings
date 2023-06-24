@@ -6,7 +6,7 @@ jupyter:
       extension: .md
       format_name: markdown
       format_version: '1.3'
-      jupytext_version: 1.14.5
+      jupytext_version: 1.14.1
   kernelspec:
     display_name: Python 3 (ipykernel)
     language: python
@@ -39,14 +39,26 @@ import gspread
 import innertube
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+
 from tqdm.auto import tqdm
 
 from youtube_topics import data_path
-from youtube_topics.bradley_terry import answer_df
+from youtube_topics.bradley_terry import answer_df, parse_answer
 from youtube_topics.mturk import (df_to_sheet, mturkify, prep_mturk_batch,
                                   recent_thumbnails)
+
+
 ```
 
+```python tags=[]
+creds = pd.read_csv(data_path("new_user_credentials.csv"))
+key_id, secret_key = creds.iloc[0][["Access key ID", "Secret access key"]]
+
+client = boto3.client(
+    "mturk", "us-east-1", aws_access_key_id=key_id, aws_secret_access_key=secret_key
+)
+```
 # Part 1: Creating the qualification test 
 
 
@@ -58,7 +70,7 @@ We upload them to google drive via gsheet to select all the ones which are sort 
 
 ```python
 # read batch
-df = pd.read_csv(data_path("newest_test_bt_feb7.csv"))
+df = pd.read_csv(data_path("generated_batch.csv"))
 
 # extract only the channels
 all_pairs_df = pd.concat(
@@ -67,7 +79,7 @@ all_pairs_df = pd.concat(
 )
 
 # write everything to the sheet
-gc = gspread.service_account(filename="data/reddit-rules-b2ab6d75ef7d.json")
+gc = gspread.service_account(filename="data/login-file.json")
 df = all_pairs_df
 client = innertube.InnerTube("WEB")
 df = df.reset_index(drop=True)
@@ -96,6 +108,19 @@ df_to_sheet(gc, all_pairs_df, "left")
 
 ## Reading back the channels, and setting it up for mturk 
 
+
+### For the partisan experiment
+
+```python
+client = innertube.InnerTube("WEB")
+
+def build_qualtest(qt_df, client):
+    
+    turkified = mturkify(client, qt_df)
+
+    return prep_mturk_batch(turkified, batch_size=50)
+```
+
 ```python
 bt_qualtest_df = pd.read_csv(data_path("qualtest_bt_drive.csv"))
 
@@ -105,71 +130,63 @@ bt_qualtest_df_chans = (
     .reset_index(drop=True)
 )
 
-client = innertube.InnerTube("WEB")
+batched_partisan = build_qualtest(bt_qualtest_df_chans, client)
 
-turkified = mturkify(client, bt_qualtest_df_chans)
+batched_partisan.to_csv(data_path("bradley_terry_qualtest.csv"), index=False)
+```
 
-batched = prep_mturk_batch(turkified, batch_size=50)
+### Similarly for gender, music
 
-batched.to_csv(data_path("bradley_terry_qualtest.csv"), index=False)
+```python
+gender_qualtest_df = (
+    pd.read_csv(data_path('bt/bt_gender_howto_qt.csv'))
+    .rename(columns={"masculine": "A", "feminine": "B"})[["A", "B"]]
+    .sample(frac=1, replace=False, random_state=0)
+    .reset_index(drop=True)
+)
+
+batched_gender = build_qualtest(gender_qualtest_df, client).assign(dim='gender')
+
+
+```
+
+```python
+age_qualtest_df = (
+    pd.read_csv(data_path('bt/bt_age_music_qt.csv'))
+    .rename(columns={"young": "A", "old": "B"})[["A", "B"]]
+    .sample(frac=1, replace=False, random_state=0)
+    .reset_index(drop=True)
+)
+
+batched_age = build_qualtest(age_qualtest_df, client).assign(dim='age')
+batched_age.to_csv(data_path("bt/bt_qualtest_age25.csv"), index=False)
 ```
 
 # Part 2: Qualification test results
 
 
-## Check who got the right answers
+### For the age qualtest
 
 ```python
-# using answer_df to add answer column is dirty, todo fix
+# true answer is always A, randomization is done client side on mturk 
+true_res = np.array(['A' for _ in range(25)])
+results = pd.read_csv(data_path("bt/qualtest_age_redo_res.csv"))
+results['answer'] = results['Answer.batch-results'].apply(parse_answer).apply(lambda x: [y['age'] for y in x]).apply(np.array)
+results['true'] = results['answer'].apply(lambda x: (x == true_res).mean())
 
-# read true answers
-true_res = pd.read_csv(data_path("bradley_terry_qualtest_res.csv"))
-answer_df(true_res)
-true_res = true_res.answers.apply(lambda x: np.array([y["partisan"] for y in x])).iloc[
-    0
-]
+# select all workers with one error or less
+valid_workers = list(results.query('true > 0.95')['WorkerId'])
 
-# read user answer
-results = pd.read_csv(data_path("bradley_terry_qualtest_results.csv"))
-try:
-    answer_df(results)
-except:
-    pass
-results = results[results["answers"].apply(len) == 25]
-results["answers"] = results.answers.apply(
-    lambda x: np.array([y["partisan"] for y in x])
-)
-
-results["true"] = res.apply(lambda x: (x == true_res).mean())
-
-valid_workers = results.query("true > 0.8").WorkerId
-
-results["true"].plot(kind="hist")
-```
-
-```python
-creds = pd.read_csv(data_path("new_user_credentials.csv"))
-key_id, secret_key = creds.iloc[0][["Access key ID", "Secret access key"]]
-
-client = boto3.client(
-    "mturk", "us-east-1", aws_access_key_id=key_id, aws_secret_access_key=secret_key
-)
-```
-
-### Create qualification for good workers
-
-```python
+# create a qualification for all our workers which passed
 resp = client.create_qualification_type(
-    Name="youtube-politicalbt-qualtest",
-    Keywords="Qualification,youtube,political",
-    Description="Qualification for workers that passed the youtube bradley terry political test",
+    Name="youtube-agebt-qualtest",
+    Keywords="Qualification,youtube,age",
+    Description="Qualification for workers that passed the youtube bradley terry age test",
     QualificationTypeStatus="Active",
-    AutoGranted=True,
-    AutoGrantedValue=0,
+    AutoGranted=False,
 )
-```
 
-```python
+# give them the qualification
 for worker in valid_workers:
     response = client.associate_qualification_with_worker(
         QualificationTypeId=resp["QualificationType"]["QualificationTypeId"],
@@ -177,8 +194,4 @@ for worker in valid_workers:
         IntegerValue=1,
         SendNotification=False,
     )
-```
-
-```python
-client.get_qualification_type(QualificationTypeId="3KPNUZIAIXR6BLN86WD1UCYS4KDH1T")
 ```
