@@ -6,7 +6,7 @@ jupyter:
       extension: .md
       format_name: markdown
       format_version: '1.3'
-      jupytext_version: 1.14.1
+      jupytext_version: 1.14.4
   kernelspec:
     display_name: Python 3 (ipykernel)
     language: python
@@ -37,18 +37,15 @@ sys.path += [".."]
 import boto3
 import gspread
 import innertube
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-
 from tqdm.auto import tqdm
 
 from youtube_topics import data_path
 from youtube_topics.bradley_terry import answer_df, parse_answer
 from youtube_topics.mturk import (df_to_sheet, mturkify, prep_mturk_batch,
                                   recent_thumbnails)
-
-
 ```
 
 ```python tags=[]
@@ -84,13 +81,31 @@ df = all_pairs_df
 client = innertube.InnerTube("WEB")
 df = df.reset_index(drop=True)
 
+
 def get_channels_summary(col):
-    return df[col].apply(lambda chanid: recent_thumbnails(client, chanid, nthumbs=4).head(4).to_dict(orient="records"))
+    return df[col].apply(
+        lambda chanid: recent_thumbnails(client, chanid, nthumbs=4)
+        .head(4)
+        .to_dict(orient="records")
+    )
+
 
 def process_title(s, col):
-    return s.apply(lambda l: [x["title"] for x in l]).apply(pd.Series).rename(columns=lambda i: f"{col}_{i}")
+    return (
+        s.apply(lambda l: [x["title"] for x in l])
+        .apply(pd.Series)
+        .rename(columns=lambda i: f"{col}_{i}")
+    )
+
+
 def process_thumb(s, col):
-    return s.apply(lambda l: [x["thumbnail"] for x in l]).apply(pd.Series).rename(columns=lambda i: f"{col}_{i}").applymap(lambda x: f'=IMAGE("{x}")')
+    return (
+        s.apply(lambda l: [x["thumbnail"] for x in l])
+        .apply(pd.Series)
+        .rename(columns=lambda i: f"{col}_{i}")
+        .applymap(lambda x: f'=IMAGE("{x}")')
+    )
+
 
 channel_summaries = [(col, get_channels_summary(col)) for col in tqdm(df.columns)]
 df_thumb = pd.concat(
@@ -114,8 +129,8 @@ df_to_sheet(gc, all_pairs_df, "left")
 ```python
 client = innertube.InnerTube("WEB")
 
+
 def build_qualtest(qt_df, client):
-    
     turkified = mturkify(client, qt_df)
 
     return prep_mturk_batch(turkified, batch_size=50)
@@ -139,26 +154,24 @@ batched_partisan.to_csv(data_path("bradley_terry_qualtest.csv"), index=False)
 
 ```python
 gender_qualtest_df = (
-    pd.read_csv(data_path('bt/bt_gender_howto_qt.csv'))
+    pd.read_csv(data_path("bt/bt_gender_howto_qt.csv"))
     .rename(columns={"masculine": "A", "feminine": "B"})[["A", "B"]]
     .sample(frac=1, replace=False, random_state=0)
     .reset_index(drop=True)
 )
 
-batched_gender = build_qualtest(gender_qualtest_df, client).assign(dim='gender')
-
-
+batched_gender = build_qualtest(gender_qualtest_df, client).assign(dim="gender")
 ```
 
 ```python
 age_qualtest_df = (
-    pd.read_csv(data_path('bt/bt_age_music_qt.csv'))
+    pd.read_csv(data_path("bt/bt_age_music_qt.csv"))
     .rename(columns={"young": "A", "old": "B"})[["A", "B"]]
     .sample(frac=1, replace=False, random_state=0)
     .reset_index(drop=True)
 )
 
-batched_age = build_qualtest(age_qualtest_df, client).assign(dim='age')
+batched_age = build_qualtest(age_qualtest_df, client).assign(dim="age")
 batched_age.to_csv(data_path("bt/bt_qualtest_age25.csv"), index=False)
 ```
 
@@ -168,14 +181,19 @@ batched_age.to_csv(data_path("bt/bt_qualtest_age25.csv"), index=False)
 ### For the age qualtest
 
 ```python
-# true answer is always A, randomization is done client side on mturk 
-true_res = np.array(['A' for _ in range(25)])
+# true answer is always A, randomization is done client side on mturk
+true_res = np.array(["A" for _ in range(25)])
 results = pd.read_csv(data_path("bt/qualtest_age_redo_res.csv"))
-results['answer'] = results['Answer.batch-results'].apply(parse_answer).apply(lambda x: [y['age'] for y in x]).apply(np.array)
-results['true'] = results['answer'].apply(lambda x: (x == true_res).mean())
+results["answer"] = (
+    results["Answer.batch-results"]
+    .apply(parse_answer)
+    .apply(lambda x: [y["age"] for y in x])
+    .apply(np.array)
+)
+results["true"] = results["answer"].apply(lambda x: (x == true_res).mean())
 
 # select all workers with one error or less
-valid_workers = list(results.query('true > 0.95')['WorkerId'])
+valid_workers = list(results.query("true > 0.95")["WorkerId"])
 
 # create a qualification for all our workers which passed
 resp = client.create_qualification_type(

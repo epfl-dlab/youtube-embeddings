@@ -6,7 +6,7 @@ jupyter:
       extension: .md
       format_name: markdown
       format_version: '1.3'
-      jupytext_version: 1.14.1
+      jupytext_version: 1.14.4
   kernelspec:
     display_name: Python 3 (ipykernel)
     language: python
@@ -33,6 +33,8 @@ sys.path += [".."]
 # isort: on
 
 import ast
+import base64
+import json
 
 import numpy as np
 import pandas as pd
@@ -67,7 +69,7 @@ recomm_neigh = NearestNeighbors(n_neighbors=100, metric="cosine").fit(recomm_emb
 ### Sample similarity
 
 ```python
-client = innertube.Innertube("WEB")
+client = innertube.InnerTube("WEB")
 
 embed_dict = {
     "recomm": (recomm_embed, recomm_neigh),
@@ -168,11 +170,9 @@ emb_dict = {"recomm": recomm_embed, "reddit": reddit_embed, "content": content_e
 
 # contains 460 instead of expected 450 rows because some channels were removed from dataset
 # so we re-created some hits so we have as many hits for each embed from the channels currently in the dataset
-res_path = data_path("similarity/results.csv")
+res_path = data_path("similarity/results_filtered.csv")
 
-curr_mod_embed = read_mturk_res(
-    res_path, cols=["HITId", "embed", "frac"]
-)
+curr_mod_embed = read_mturk_res(res_path, cols=["HITId", "embed", "frac"])
 curr_mod_embed["frac"] = curr_mod_embed["frac"].astype(str)
 ```
 
@@ -213,9 +213,10 @@ def explode_shared_batches(df, arr_colname):
         pd.DataFrame(x) for x in df.apply(split_fraction, axis=1)
     ).reset_index(drop=True)
 
+
 def filter_mode(df):
-    """Filter batches where mturker was able to answer more times than expected: probably random answer bot"""
-    lens = df['res'].apply(len)
+    """Filter answers where mturker was able to answer more times than expected: people using extensions / bots"""
+    lens = df["res"].apply(len)
     mode = lens.mode().iloc[0]
     return df[lens == mode]
 ```
@@ -224,25 +225,32 @@ def filter_mode(df):
 
 ```python
 mode_mods = (
-    curr_mod_embed
-    .groupby(['HITId', 'frac']).apply(filter_mode).reset_index(drop=True)
+    curr_mod_embed.groupby(["HITId", "frac"])
+    .apply(filter_mode)
+    .reset_index(drop=True)
     .groupby(["HITId", "frac"])[["res"]]
     .apply(lambda d: pd.DataFrame(np.stack(d.iloc[:, 0])).mode(axis=0).iloc[0].tolist())
     .to_frame("mode_res")
 )
 
 agree_count = (
-    curr_mod_embed
-    .groupby(['HITId', 'frac']).apply(filter_mode).reset_index(drop=True)
+    curr_mod_embed.groupby(["HITId", "frac"])
+    .apply(filter_mode)
+    .reset_index(drop=True)
     .groupby(["HITId", "frac"])
     .apply(agreement_number("res"))
     .to_frame("agree_count")
 )
 
-mod0_embed = read_mturk_res(
-    res_path,
-    cols=["HITId", "embed", "Input.jsons", "frac"],
-).groupby(['HITId', 'frac']).apply(filter_mode).reset_index(drop=True)
+mod0_embed = (
+    read_mturk_res(
+        res_path,
+        cols=["HITId", "embed", "Input.jsons", "frac"],
+    )
+    .groupby(["HITId", "frac"])
+    .apply(filter_mode)
+    .reset_index(drop=True)
+)
 
 embed_with_input = pd.concat((mod0_embed,)).drop_duplicates(subset=["HITId"])
 embed_with_input["frac"] = embed_with_input["frac"].astype(str)
@@ -284,8 +292,56 @@ full_df_agreement = (
 full_df_agreement["frac"] = full_df_agreement["frac"].astype("float")
 ```
 
+<!-- #region tags=[] -->
 ### Save
+<!-- #endregion -->
 
 ```python
-full_df_agreement.to_json(data_path("figures_in/mturk_similarity_results_final.jsonl"), lines=True, orient='records')
+full_df_agreement.to_json(
+    data_path("figures_in/mturk_similarity_results_filtered.jsonl"),
+    lines=True,
+    orient="records",
+)
+```
+
+## Appendix: filtering comparisons
+
+Some of the comparisons (16/900) were performed on a channels which are no longer in the dataset.
+
+To make sure we had exactly as many comparisons with channels in our dataset for each embedding, we re-did as many comparisons, and filter out the previous ones.
+
+This is the difference between "mturk_similarity_results_filtered", and "mturk_similarity_results_final"
+
+```python
+def filter_json_channels(x):
+    df = pd.DataFrame(json.loads(base64.b64decode(x["Input.jsons"])))
+
+    # only keep if all channels are in the dataset
+    mask = (
+        df[["A_channelId", "B_channelId", "C_channelId"]]
+        .apply(lambda x: x.isin(reddit_embed.index))
+        .all(axis=1)
+    )
+    df_filt = df[mask]
+
+    length = x["Input.length"]
+
+    # update array, unless size was already wrong
+    arr = np.array(x["Answer.batch-results"].split(","))
+    res = x["Answer.batch-results"] if len(arr) != length else ",".join(arr[mask])
+
+    return (
+        base64.b64encode(df_filt.to_json(None, orient="records").encode()).decode(),
+        mask.sum(),
+        res,
+    )
+
+
+df_sim = pd.read_csv(data_path("similarity/results.csv"))
+
+df_sim["Input.jsons"], df_sim["Input.length"], df_sim["Answer.batch-results"] = list(
+    zip(*df_sim.apply(filter_json_channels, axis=1))
+)
+
+df_sim.to_csv(data_path("similarity/results_filtered.csv"), index=False)
 ```
