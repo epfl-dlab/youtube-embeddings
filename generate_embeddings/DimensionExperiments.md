@@ -6,7 +6,7 @@ jupyter:
       extension: .md
       format_name: markdown
       format_version: '1.3'
-      jupytext_version: 1.14.1
+      jupytext_version: 1.14.4
   kernelspec:
     display_name: Python 3 (ipykernel)
     language: python
@@ -433,7 +433,7 @@ f1_score_df.to_csv(data_path("figures_in/f1_score_train_label.csv"), index=False
 
 The dimensions we obtain tend to be distributed in a very sharp way: our classifier is often very sure that channels should be labelled as left or right, but we rarely see probabilities around 0.5, which is quite different from what we see overall in our original dimensions.
 
-```python
+```python jupyter={"outputs_hidden": true} tags=[]
 j_class = (
     classes.set_index("channelId").join(reddit_embed[[]], how="inner").reset_index()
 )
@@ -520,11 +520,43 @@ This part is similar to part 3. However, instead of training classifiers from ou
 
 We then compute the same rank correlation as before, to see if we're able to get similarly good (if not better) results, compared to our original dimensions.
 
+<!-- #region tags=[] -->
+### Re-read classes
+
+We are no longer training our binary classifier so we can now keep all our classes.
+<!-- #endregion -->
+
+```python
+classes = pd.read_csv(data_path("polarized_manoel_mbc_nondup.csv"))
+ordering = [
+    "extremeleft",
+    "left",
+    "centerleft",
+    "center",
+    "centerright",
+    "right",
+    "extremeright",
+]
+
+ordering_cat = pd.CategoricalDtype(ordering, ordered=True)
+class_codes = classes.set_index("channelId")["bias"].astype(ordering_cat).cat.codes
+
+embeddings = {
+    "reddit": reddit_embed,
+    "recomm": recomm_embed,
+    "content": content_embed,
+}
+
+j_class = (
+    classes.set_index("channelId").join(reddit_embed[[]], how="inner").reset_index()
+)
+```
 
 ### Train on full dataset, get rank correlations
 
 ```python
 ordering_scores_reddit = {}
+predicted_scores = {}
 
 for emb_name, embed in tqdm(embeddings.items()):
     rfr = RandomForestRegressor(n_estimators=100, n_jobs=20)
@@ -538,10 +570,21 @@ for emb_name, embed in tqdm(embeddings.items()):
         rfr.predict(embed.loc[j_class.channelId]), index=j_class.channelId
     )
 
+    # save all values for bootstrap
+    predicted_scores[emb_name] = j_class.set_index("channelId").join(
+        preds.to_frame("pred")
+    )
+
     # compute rank correlation score
     ord_score = kendalltau_score(preds, j_class, ordering, id_col="channelId")
 
     ordering_scores_reddit[emb_name] = ord_score
+
+
+# predictions from pred
+predicted_scores["reddit_avg"] = j_class.set_index("channelId").join(
+    reddit_dim.loc[j_class.channelId].partisan.to_frame("pred")
+)
 
 # compute reddit dim ordering score to compare
 ordering_scores_reddit["reddit_avg"] = kendalltau_score(
@@ -549,7 +592,6 @@ ordering_scores_reddit["reddit_avg"] = kendalltau_score(
 )
 
 # save df
-
 ordering_score_reddit_df = pd.DataFrame.from_dict(
     ordering_scores_reddit, orient="index"
 ).T
@@ -557,7 +599,26 @@ ordering_score_reddit_df = pd.DataFrame.from_dict(
 ordering_score_reddit_df.to_csv(
     data_path("figures_in/ordering_train_reddit.csv"), index=False
 )
-ordering_score_reddit_df
+
+
+# Bootstrap samples
+ITERS = 1_000
+
+embed_rank_corrs = defaultdict(list)
+
+for embed in list(embeddings) + ["reddit_avg"]:
+    for i in tqdm(range(ITERS)):
+        sample = predicted_scores[embed].sample(frac=1, replace=True)
+
+        rank_corr = kendalltau_score(
+            sample["pred"], sample[["bias"]].reset_index(), ordering, id_col="channelId"
+        )
+
+        embed_rank_corrs[embed].append(rank_corr)
+
+pd.DataFrame(embed_rank_corrs).to_csv(
+    data_path("figures_in/regression_train_bootstrap.csv"), index=False
+)
 ```
 
 #### Compute average MAE (compared to reddit dim)
@@ -647,9 +708,9 @@ for dim in tqdm(DIMS):
 ## Extra : Training per category (except the few we are interested in)
 
 ```python
-default_dims = pd.read_feather(
-    data_path("dims/reddit.feather.zstd")
-).set_index("channelId")
+default_dims = pd.read_feather(data_path("dims/reddit.feather.zstd")).set_index(
+    "channelId"
+)
 aggdf = pd.read_feather(data_path("per_channel_aggs.feather.zstd"))
 topicdf = pd.read_json(data_path("id_to_topic.jsonl.gz"), lines=True)
 aggdf["topic_id"] = aggdf["major_cat"].astype(int)

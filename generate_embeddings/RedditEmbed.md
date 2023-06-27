@@ -6,7 +6,7 @@ jupyter:
       extension: .md
       format_name: markdown
       format_version: '1.3'
-      jupytext_version: 1.14.1
+      jupytext_version: 1.14.4
   kernelspec:
     display_name: Python 3 (ipykernel)
     language: python
@@ -39,11 +39,11 @@ from youtube_topics.reddit_averaging import (averaging_embed, get_scores_df,
 ## Read channel, subreddit dataframe
 
 ```python
-subs_df = pd.read_parquet(
-    data_path("submissions_with_channel.parquet/")
-)
+subs_df = pd.read_parquet(data_path("submissions_with_channel.parquet/"))
 comms_df = pd.read_parquet(
-    data_path("/dlabdata1/scratch_060/scratch/boesinge/youtube-topics/comments_with_channel.parquet")
+    data_path(
+        "/dlabdata1/scratch_060/scratch/boesinge/youtube-topics/comments_with_channel.parquet"
+    )
 )
 
 concat = pd.concat((comms_df, subs_df))

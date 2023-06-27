@@ -6,7 +6,7 @@ jupyter:
       extension: .md
       format_name: markdown
       format_version: '1.3'
-      jupytext_version: 1.14.5
+      jupytext_version: 1.14.4
   kernelspec:
     display_name: Python 3 (ipykernel)
     language: python
@@ -32,11 +32,12 @@ sys.path += [".."]
 import logging
 
 import pandas as pd
-from youtube_topics.inner_proxies.multiprocessing import compute_with_proxies, retry
-from youtube_topics.inner_proxies.recommendation import RecommendationExtractor
 from tqdm.auto import tqdm
 
 from youtube_topics import data_path, read_proxies
+from youtube_topics.inner_proxies.multiprocessing import (compute_with_proxies,
+                                                          retry)
+from youtube_topics.inner_proxies.recommendation import RecommendationExtractor
 ```
 
 ### Proxy list

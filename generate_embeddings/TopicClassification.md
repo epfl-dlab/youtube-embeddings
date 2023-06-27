@@ -6,7 +6,7 @@ jupyter:
       extension: .md
       format_name: markdown
       format_version: '1.3'
-      jupytext_version: 1.14.1
+      jupytext_version: 1.14.4
   kernelspec:
     display_name: Python 3 (ipykernel)
     language: python
@@ -21,6 +21,7 @@ jupyter:
 ```python
 import json
 import logging
+import sys
 import time
 from collections import defaultdict
 from functools import reduce
@@ -29,17 +30,16 @@ from glob import glob
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-
-from tqdm.auto import tqdm
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import f1_score
 from sklearn.model_selection import train_test_split
-
-import sys
-
-sys.path += ['..']
+from tqdm.auto import tqdm
 
 from youtube_topics import data_path
+
+sys.path += [".."]
+
+
 plt.style.use("ggplot")
 ```
 
@@ -47,9 +47,16 @@ plt.style.use("ggplot")
 
 ```python
 embeds_dic = dict(
-    reddit=pd.read_feather(data_path('embeds/reddit.feather.zstd')).set_index('channelId'),
-    content=pd.read_feather(data_path('embeds/content.feather.zstd')).set_index('channelId'),
-    recomm=pd.read_feather(data_path('embeds/recomm.feather.zstd')).set_index('channelId'))
+    reddit=pd.read_feather(data_path("embeds/reddit.feather.zstd")).set_index(
+        "channelId"
+    ),
+    content=pd.read_feather(data_path("embeds/content.feather.zstd")).set_index(
+        "channelId"
+    ),
+    recomm=pd.read_feather(data_path("embeds/recomm.feather.zstd")).set_index(
+        "channelId"
+    ),
+)
 
 ### Load topics from fetched api v3 data
 aggdf = pd.read_feather(data_path("per_channel_aggs.feather.zstd"))
@@ -85,12 +92,10 @@ NUM_ITERS = 100
 datasets = {}
 
 for cat in cats:
-
     pos_ids = []
     neg_ids = []
 
     for _ in tqdm(range(NUM_ITERS)):
-
         pos_df = chantopic.query("topic == @cat").sample(N_SAMPLE, replace=False)
         neg_df = chantopic.query("topic != @cat").sample(N_SAMPLE, replace=False)
 
@@ -107,12 +112,10 @@ scores = defaultdict(list)
 
 # gaming, sport, etc
 for cat in datasets:
-
     cat_df = datasets[cat]
 
     # get positive, negative samples
     for it, (pos, neg) in tqdm(enumerate(cat_df), total=len(cat_df)):
-
         # df with neg and pos label
         iterdf = pd.concat(
             (embeds_df.loc[pos].assign(label=1), embeds_df.loc[neg].assign(label=0))
@@ -129,7 +132,6 @@ for cat in datasets:
 
         # over all embeddings
         for col in cols:
-
             # get X
             X = np.vstack(iterdf[col])
             X_train, X_test = X[train_indices], X[test_indices]
@@ -158,5 +160,7 @@ scores_df = scores_df.assign(embed=scores_df.embed.apply(lambda s: s.capitalize(
 ```
 
 ```python
-scores_df.to_json(data_path('figures_in/topic_classification.jsonl'), lines=True, orient='records')
+scores_df.to_json(
+    data_path("figures_in/topic_classification.jsonl"), lines=True, orient="records"
+)
 ```

@@ -6,7 +6,7 @@ jupyter:
       extension: .md
       format_name: markdown
       format_version: '1.3'
-      jupytext_version: 1.14.5
+      jupytext_version: 1.14.4
   kernelspec:
     display_name: Python 3 (ipykernel)
     language: python
@@ -53,6 +53,7 @@ Obtain language information using fasttext trained model (whatthelang) from titl
 def remove_emoji(s):
     return emoji.replace_emoji(s, replace="")
 
+
 wtl = WhatTheLang()
 
 
@@ -87,6 +88,7 @@ Unofficial youtube api: fetch languages from yt with defaultAudioLanguage,defaul
 
 ```python
 wrap_proxies = read_proxies(data_path("proxy_list.txt"))
+
 
 def postprocess(iterable, res):
     return pd.concat(
