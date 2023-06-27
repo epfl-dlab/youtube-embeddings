@@ -49,6 +49,14 @@ from youtube_topics.bradley_terry import (get_rank,
 
 from youtube_topics import data_path
 
+from statsmodels.stats.weightstats import ztest as ztest
+from scipy.stats import ttest_ind as ttest
+from itertools import combinations
+from IPython.display import Markdown
+from functools import reduce, partial
+from collections import defaultdict
+from tqdm.auto import tqdm
+
 sns.set_style("whitegrid")
 ```
 
@@ -56,7 +64,7 @@ sns.set_style("whitegrid")
 
 ```python
 full_df_agreement = pd.read_json(
-    data_path("figures_in/mturk_similarity_results_final.jsonl"), lines=True
+    data_path("figures_in/mturk_similarity_results_filtered.jsonl"), lines=True
 )
 
 with_overall = pd.concat(
@@ -77,6 +85,10 @@ replace_dict = {
 ord_reddit = pd.read_csv(data_path("figures_in/ordering_train_reddit.csv")).rename(
     columns=replace_dict
 )
+bootstrap_ord_reddit = pd.read_csv(data_path("figures_in/regression_train_bootstrap.csv")).rename(
+    columns=replace_dict
+).drop(columns=['Reddit']).rename(columns={'Subreddit':'Reddit'})
+
 default_dims = pd.read_feather(data_path("dims/reddit.feather.zstd")).set_index(
     "channelId"
 )
@@ -145,13 +157,14 @@ plt.savefig(data_path("figures_out/fig_semantic.pdf"), dpi=300, bbox_inches="tig
 
 ### Semantic experiment tables
 
-```python
+```python tags=[]
 ## FIRST PLOT
 
 order = ['Reddit','Content','Recommendation']
 frac_col = 'k'
 
 first_ax_df = (fraction_plot_df(full_df_agreement, ax=None)
+               .drop(columns='results')
                .applymap(lambda x: replace_dict.get(x, x))
                .rename(columns={'embed':'Embedding','frac':frac_col, 'agg':'Value'})
                .pivot(index='Embedding', columns=frac_col, values='Value')
@@ -173,7 +186,9 @@ print(first_ax_df
 
 ## SECOND PLOT
 worker_col = 'Min \#Workers Agreeing'
-second_ax_df = (plot_dfs["overall"].applymap(lambda x: replace_dict.get(x, x))
+second_ax_df = (plot_dfs["overall"]
+               .drop(columns='results')
+               .applymap(lambda x: replace_dict.get(x, x))
                .rename(columns={'embed':'Embedding','agg_num':worker_col, 'agg':'Value'})
                .pivot(index='Embedding', columns=worker_col, values='Value')
               )
@@ -234,9 +249,7 @@ sns.barplot(
     order=["Reddit","Content","Recommendation"],
     ax=ax,
 )
-# barheight = ord_reddit["Subreddit"].mean()
-# ax.axhline(barheight, c="r")
-# ax.text(-0.48, barheight - barheight / 0.95 * 0.05, SB_BASELINE_TEXT, ha="left")
+
 ax.set(
     title=r"$\bf{(a)}$ Partisan - Political channel categories",
     xlabel="",
@@ -246,17 +259,15 @@ ax.set(
 ax = ax_dict['bt_partisan']
 plot2_df = plot_corr_csv(data_path("bradley_terry/bt_partisan_res.csv"), "partisan", default_dims, ax=ax, container_label=False, replace_dict=replace_dict, use_hue=False, order=['Reddit', 'Content', 'Recommendation'])
 ax.set(title=r'$\bf{(b)}$ Partisan - "News & Politics" category BT', ylabel='', xlabel='')
-# ax.get_legend().remove()
 
 ax = ax_dict['bt_gender']
 plot3_df = plot_corr_csv(data_path("bradley_terry/bt_gender_res.csv"), "gender", default_dims, ax=ax, container_label=False, replace_dict=replace_dict, use_hue=False, order=['Reddit', 'Content', 'Recommendation'])
 ax.set(title=r'$\bf{(c)}$ Gender - "Howto & Style" category BT', ylabel='', xlabel='')
-# ax.get_legend().remove()
 
 ax = ax_dict['bt_age']
 plot4_df = plot_corr_csv(data_path("bradley_terry/bt_age_res.csv"), "age", default_dims, ax=ax, container_label=False, replace_dict=replace_dict, use_hue=False, order=['Reddit', 'Content', 'Recommendation'])
 ax.set(title=r'$\bf{(d)}$ Age - "Music" category BT', ylabel='', xlabel='')
-# ax.get_legend().remove()
+
 
 for ax in ax_dict.values():
     for cont in ax.containers:
@@ -290,4 +301,114 @@ print(plot_df[['Reddit','Content','Recommendation']]
                 position_float="centering",
                 multicol_align="|c|",
                ))
+```
+
+## Appendix: Checking significance using z/t tests and getting p-value
+
+```python
+def combinations_stattest_pval(df, testtype="ttest"):
+    
+    stattest_func = {'ttest': lambda x,a,b: ttest(x[a], x[b]).pvalue,
+                     'ztest': lambda x,a,b: ztest(x[a], x[b])[1]}
+    
+    assert testtype in stattest_func
+    
+    combs = list(combinations(df.columns, r=2))
+    return df.apply(lambda x: pd.Series({f'{a}-{b}': stattest_func[testtype](x,a,b) for a,b in combs}),axis=1)
+```
+
+### Similarity plots 
+
+```python
+# topic classification
+all_comps_topic = scores_df.pivot(columns='embed', index='topic', values='scores')
+display(Markdown('**Topic classification**'), combinations_stattest_pval(all_comps_topic, testtype="ttest"))
+
+# agreement k
+tmp_k = fraction_plot_df(full_df_agreement, ax=None)
+tmp_k = tmp_k.assign(k=tmp_k.frac*44000)
+all_comps_k = tmp_k.pivot(columns='embed', index='k', values='results')
+display(Markdown('**Agreeement vs k**'), combinations_stattest_pval(all_comps_k, testtype="ttest"))
+
+# agreement min #workers
+all_comps_minw = plot_dfs['overall'].pivot(columns='embed', index='agg_num', values='results')
+display(Markdown('**Agreeement vs Minimum #workers**'), combinations_stattest_pval(all_comps_minw, testtype="ttest"))
+```
+
+#### While we're there, also display n (number of comparisons)
+
+```python
+tmp_k.groupby('frac')['length'].first()
+```
+
+```python
+plot_dfs['overall'].groupby('agg_num')['length'].first()
+```
+
+### Dimension plots
+
+
+#### Political labels
+
+```python
+combinations_stattest_pval(bootstrap_ord_reddit.apply(lambda x: [x]).applymap(list), testtype="ttest")
+```
+
+#### Bradley terry experiments
+
+```python
+def bootstrap_singledim(path, dimension):
+
+    df = pd.read_csv(path)
+    return get_rank(df, dimension, reverse_dim=True)
+
+bt_dfs = {'partisan': bootstrap_singledim(data_path("bradley_terry/bt_partisan_res.csv"), "partisan"),
+          'gender': bootstrap_singledim(data_path("bradley_terry/bt_gender_res.csv"), "gender"),
+          'age': bootstrap_singledim(data_path("bradley_terry/bt_age_res.csv"), "age")}
+
+saved_dims_path='dims/regression_overall'
+
+dim_bt_dfs = {}
+
+for dim, bt_ranks in bt_dfs.items():
+    
+    recomm_reg = pd.read_feather(
+        data_path(f"{saved_dims_path}/recomm_{dim}.feather.zstd")
+    ).set_index("channelId").rename(columns={dim: "recomm"})
+
+    reddit_reg = default_dims[[dim]].rename(columns={dim: "reddit"})
+    
+    content_reg = pd.read_feather(
+        data_path(f"{saved_dims_path}/content_{dim}.feather.zstd")
+    ).set_index("channelId").rename(columns={dim: "content"})
+    
+    bt_ranks = bt_ranks.rename(columns={dim: "bt"})
+    
+    dim_bt_dfs[dim] = reduce(
+        partial(pd.DataFrame.join, how='inner'), (recomm_reg, reddit_reg, content_reg, bt_ranks))
+    
+# Bootstrap samples
+ITERS = 1_000
+
+embed_rank_corrs = defaultdict(list)
+
+for dim, df in dim_bt_dfs.items():
+    for i in tqdm(range(ITERS)):
+        
+        sample = df.sample(frac=1, replace=True)
+        
+        for embed in ['recomm', 'reddit', 'content']:
+    
+            rank_corr = dim_corrs(sample[['bt']].rename(columns=lambda x: dim),
+              sample[[embed]].rename(columns=lambda x: dim), dim=dim)
+
+            embed_rank_corrs[dim, embed].append(rank_corr)
+```
+
+```python
+all_comps_bt = (pd.DataFrame(embed_rank_corrs)
+                .apply(lambda x: [x]).T.reset_index()
+                .pivot(index='level_0', columns='level_1', values=0)
+                .applymap(list))
+combinations_stattest_pval(all_comps_bt, testtype="ttest")
 ```

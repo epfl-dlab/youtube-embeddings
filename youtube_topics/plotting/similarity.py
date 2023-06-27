@@ -20,12 +20,16 @@ def plot_df_similarity(df, embed_data):
             ],
             axis=1,
         )
+        
         agg_df = (
             df_tmp.groupby("embed")["agglist"]
-            .apply(lambda x: np.mean(list(chain.from_iterable(x))))
-            .to_frame("agg")
+            .agg(length=lambda x: len(list(chain.from_iterable(x))),
+                 agg=lambda x: np.mean(list(chain.from_iterable(x))),
+                 results=lambda x: list(chain.from_iterable(x))
+                )
             .assign(agg_num=agg_num)
         )
+        
         agg_dfs.append(agg_df)
 
     return pd.concat(agg_dfs).reset_index()
@@ -62,8 +66,9 @@ def fraction_plot_df(full_df_agreement, ax, fontsize=12):
     )
     agg_df = (
         df_tmp.groupby(["embed", "frac"])["agglist"]
-        .apply(lambda x: np.mean(list(chain.from_iterable(x))))
-        .to_frame("agg")
+        .agg(length=lambda x: len(list(chain.from_iterable(x))),
+             agg=lambda x: np.mean(list(chain.from_iterable(x))),
+             results=lambda x: list(chain.from_iterable(x)))
         .reset_index()
     )
 
