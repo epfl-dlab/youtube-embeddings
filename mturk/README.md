@@ -19,7 +19,7 @@ Each comparison is created by :
 
 - Sampling one youtube channel at random, call it A
 - Getting the nearest youtube channel to A, call it B
-- Getting the n-th (n in {600,300,150} depending on batch) nearest youtube channel to A, make sure that it is closer to A than to B, call it C
+- Getting the n-th (n in {440,220,110} depending on batch) nearest youtube channel to A, make sure that it is closer to A than to B, call it C
 
 Then, we ask the workers to rate which one is the odd one out. If the workers rate C as the odd one out, this means that the embedding was correct: A and B are more similar, than they are similar to C.
 
